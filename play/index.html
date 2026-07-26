@@ -4,11 +4,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>RotoCore</title>
+    <title>RotoCore — browser prototype</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="../assets/icon.png">
+    <meta name="description" content="The original browser prototype of RotoCore, an arcade roguelike for Playdate.">
+    <style>
+        /* Added for the website — shown only when this page is opened directly, not embedded. */
+        .site-return{position:fixed;top:14px;left:16px;z-index:50;display:none;align-items:center;gap:.55rem;
+            font-family:'Courier Prime','Courier New',monospace;font-size:11px;letter-spacing:.13em;
+            text-transform:uppercase;color:#bdbdbd;text-decoration:none}
+        .site-return:hover{color:#fff}
+        .site-return__tag{background:#FFDE21;color:#000;font-weight:700;padding:2px 7px;border-radius:3px}
+
+        /* Added for the website — the console's own buttons are clickable, and the
+           A/B labels show which key they map to. No changes to game.js. */
+        .console-button{cursor:pointer;transition:transform .06s ease, background-color .06s ease}
+        .console-button.is-down{transform:translateY(1px);background-color:#b0b0b0}
+        .d-pad-left,.d-pad-right{cursor:pointer}
+        .d-pad-left.is-down,.d-pad-right.is-down{filter:brightness(1.4)}
+        .key-chip{display:inline-block;margin-left:4px;padding:0 3px;border:1px solid currentColor;
+            border-radius:3px;font-size:8px;line-height:12px;font-family:sans-serif;opacity:.85}
+        .start-tip{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);z-index:40;
+            font-family:'Courier Prime','Courier New',monospace;font-size:11px;letter-spacing:.06em;
+            color:#e6e6e6;background:rgba(0,0,0,.82);border:1px solid rgba(255,255,255,.3);
+            border-radius:20px;padding:7px 15px;white-space:nowrap;transition:opacity .45s ease}
+        .start-tip b{color:#FFDE21}
+        .start-tip.is-gone{opacity:0;pointer-events:none}
+        /* When embedded on the site, drop the grey backdrop so it sits on black. */
+        html.is-embedded .playdate-console{background:transparent}
+    </style>
 </head>
 
 <body>
@@ -210,6 +237,87 @@
     <script src="configs/enemies.js"></script>
     <script src="configs/powerups.js"></script>
     <script src="game.js"></script>
+    <a class="site-return" href="../" id="siteReturn">
+        <span class="site-return__tag">Prototype</span> &#8592; Back to RotoCore
+    </a>
+    <script>
+        // Show the back link only on the standalone page, not inside the embed.
+        if (window.self === window.top) {
+            document.getElementById('siteReturn').style.display = 'flex';
+        }
+        // The game reads keys off document, so it needs focus — take it on any click.
+        document.addEventListener('pointerdown', function () { window.focus(); });
+
+        // Blend into the site when embedded.
+        if (window.self !== window.top) {
+            document.documentElement.classList.add('is-embedded');
+        }
+
+        // Make the drawn console actually work: its buttons fire the keys game.js listens for.
+        (function () {
+            var down = [];
+
+            function sendKey(type, k) {
+                document.dispatchEvent(new KeyboardEvent(type, { key: k, bubbles: true, cancelable: true }));
+            }
+
+            function wire(el, k) {
+                if (!el) return;
+                el.addEventListener('pointerdown', function (e) {
+                    e.preventDefault();
+                    if (el.classList.contains('is-down')) return;
+                    el.classList.add('is-down');
+                    down.push({ el: el, k: k });
+                    sendKey('keydown', k);
+                    window.focus();
+                });
+            }
+
+            function releaseAll() {
+                while (down.length) {
+                    var d = down.pop();
+                    d.el.classList.remove('is-down');
+                    sendKey('keyup', d.k);
+                }
+            }
+
+            wire(document.querySelector('.button-a-group .console-button'), 'x');
+            wire(document.querySelector('.button-b-group .console-button'), 'z');
+            wire(document.querySelector('.d-pad-left'), 'ArrowLeft');
+            wire(document.querySelector('.d-pad-right'), 'ArrowRight');
+
+            window.addEventListener('pointerup', releaseAll);
+            window.addEventListener('pointercancel', releaseAll);
+            window.addEventListener('blur', releaseAll);
+
+            // Label the buttons with their keyboard equivalents.
+            var la = document.querySelector('.button-a-group .button-label');
+            var lb = document.querySelector('.button-b-group .button-label');
+            if (la) la.innerHTML = 'A<span class="key-chip">X</span>';
+            if (lb) lb.innerHTML = 'B<span class="key-chip">Z</span>';
+
+            // The menu says "Ⓐ PLAY" but never says which key that is. Say it.
+            var console_ = document.querySelector('.playdate-console');
+            if (console_) {
+                var tip = document.createElement('div');
+                tip.className = 'start-tip';
+                tip.id = 'startTip';
+                tip.innerHTML = 'Press <b>X</b> to play &nbsp;·&nbsp; <b>&#8592;</b> <b>&#8594;</b> to rotate';
+                console_.appendChild(tip);
+
+                var dismiss = function () {
+                    tip.classList.add('is-gone');
+                    document.removeEventListener('keydown', onKey);
+                };
+                var onKey = function (e) {
+                    if (e.key === 'x' || e.key === 'X') dismiss();
+                };
+                document.addEventListener('keydown', onKey);
+                var aBtn = document.querySelector('.button-a-group .console-button');
+                if (aBtn) aBtn.addEventListener('pointerdown', dismiss);
+            }
+        })();
+    </script>
 </body>
 
 </html>
