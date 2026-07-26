@@ -4,44 +4,45 @@ Single-page site for RotoCore. No build step, no dependencies. Just static files
 
 ## Publish it
 
-1. Make a new **public** repo named `rotocore` under the `dwyergamedesign` account.
+1. Make a new **public** repo named `RotoCore` under the `dwyergamedesign` account.
 2. Drop `index.html`, `assets/`, and this README into it and push.
 3. Repo → **Settings → Pages** → Source: *Deploy from a branch* → Branch: `main`, folder: `/ (root)` → Save.
-4. Two minutes later it's live at **https://dwyergamedesign.github.io/rotocore/**
+4. Two minutes later it's live at **https://dwyergamedesign.github.io/RotoCore/**
 
 To preview locally before pushing:
 
 ```
-cd rotocore
+cd RotoCore
 python3 -m http.server 8000
 # open http://localhost:8000
 ```
 
-## Six things to edit
-
-Open `index.html` and search for each of these:
+## One thing left to edit
 
 | Search for | Replace with |
 |---|---|
 | `REPLACE_CATALOG` | your Playdate Catalog URL (5 places) |
 | `REPLACE_ITCH` | your itch.io URL (4 places) |
-| `REPLACE_EMAIL` | your press contact email (5 places) |
-| `data-edit="price"` | the price, e.g. `$5` (2 places) |
-| `data-edit="date"` | the release date (2 places) |
-| `REPLACE_SITE_URL` | `https://dwyergamedesign.github.io/rotocore` — for link previews |
 
-Not on Catalog yet? Point both buttons at itch for now and swap one later.
+Not on Catalog yet? Point both at itch for now and swap one later.
 
-## Screenshots
+Already filled in: price ($3), release (18 August 2026), version (1.3.7), contact
+(dwyergamedesign@gmail.com), site URL, and the genre line.
 
-Drop `01.png` through `04.png` into `assets/screens/`. Native 400×240 grabs are ideal —
-they're displayed pixelated so they stay crisp. Missing files show a dashed placeholder
-tile instead of a broken image, so you can publish before you have all four.
+**Repo name matters.** GitHub Pages URLs are case-sensitive, so the repo must be
+named `RotoCore` exactly to match `https://dwyergamedesign.github.io/RotoCore/`.
+Naming it `rotocore` gives a different, lowercase URL.
 
-## Trailer
+## The GIFs
 
-Search `index.html` for `TRAILER SLOT` and follow the comment — paste your YouTube ID
-into the iframe and delete the placeholder div.
+`assets/screens/01.gif` through `04.gif` — your four captures, run through
+`gifsicle -O3` losslessly (2.8 MB down to 2.0 MB). They're native 400x240, rendered
+pixelated so they stay crisp when scaled up, and lazy-loaded so they don't download
+until someone scrolls near them.
+
+The grid is 2x2 rather than 4-across, so motion has room to read. To swap one, drop a
+replacement in with the same filename. If a file is ever missing, that tile falls back
+to a dashed placeholder rather than a broken image.
 
 ## The playable prototype
 
@@ -61,7 +62,7 @@ Three additions to `play/index.html`. **No changes to `game.js`, `styles.css` or
 3. **It blends in when embedded** — the grey backdrop goes transparent inside the
    iframe, and a "← Back to RotoCore" link appears only on the standalone page.
 
-- Direct link: `https://dwyergamedesign.github.io/rotocore/play/`
+- Direct link: `https://dwyergamedesign.github.io/RotoCore/play/`
 - Controls: `X` start / Ⓐ, `Z` Ⓑ, ← → rotate, `,` `.` crank sim, `P` pause
 - The prototype saves high scores and upgrades to browser localStorage under
   `rotocore*` keys — per-browser, harmless, but progress does persist between visits.
@@ -154,6 +155,7 @@ section.
 | `assets/play-on-playdate.png` | the badge, cropped out of the banner |
 | `assets/robodwyer.png` | your dev logo, recoloured white for the dark footer |
 | `assets/icon.png` | the game icon, used as the favicon |
+| `assets/screens/*.gif` | your four gameplay captures, optimised |
 
 ## Later, if you want a domain
 
