@@ -273,6 +273,52 @@ kbd{
   font-family:var(--hud);font-size:.6rem;line-height:1.7;letter-spacing:.08em;color:#5f5f5f;
 }
 
+/* ---------- leaderboard ---------- */
+.board{border:2px solid rgba(255,255,255,.2);border-radius:12px;overflow:hidden;max-width:660px}
+.board__tabs{display:flex;align-items:stretch;border-bottom:2px solid rgba(255,255,255,.2)}
+.board__tab{
+  flex:1;appearance:none;background:transparent;border:0;cursor:pointer;
+  padding:.95rem .6rem;color:var(--ash);
+  font-family:var(--hud);font-weight:700;font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;
+  border-right:2px solid rgba(255,255,255,.2);transition:color .12s ease,background .12s ease;
+}
+.board__tab:hover{color:var(--bone)}
+.board__tab.is-on{background:var(--volt);color:#000}
+.board__refresh{
+  appearance:none;background:transparent;border:0;cursor:pointer;color:var(--ash);
+  padding:0 1.1rem;font-family:var(--hud);font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;
+}
+.board__refresh:hover{color:var(--bone)}
+.board__refresh[disabled]{opacity:.4;cursor:default}
+
+.board__list{list-style:none;margin:0;padding:0}
+.board__row{
+  display:grid;grid-template-columns:2.6rem minmax(0,1fr) auto;align-items:center;gap:1rem;
+  padding:.72rem 1.1rem;border-bottom:1px solid rgba(255,255,255,.1);
+}
+.board__list li:last-child .board__row,.board__list li:last-child{border-bottom:0}
+.board__rank{
+  font-family:var(--hud);font-weight:800;font-size:.74rem;color:#5f5f5f;font-variant-numeric:tabular-nums;
+}
+.board__name{
+  font-family:var(--hud);font-size:.78rem;letter-spacing:.04em;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.board__score{
+  font-family:var(--hud);font-weight:800;font-size:.85rem;font-variant-numeric:tabular-nums;
+}
+.board__list li:first-child .board__rank,
+.board__list li:first-child .board__score{color:var(--volt)}
+.board__msg{
+  margin:0;padding:1.5rem 1.1rem;
+  font-family:var(--hud);font-size:.63rem;letter-spacing:.11em;line-height:1.7;color:#6e6e6e;
+}
+.board__msg.is-hidden{display:none}
+.board__foot{
+  max-width:660px;margin:.95rem 0 0;
+  font-family:var(--hud);font-size:.58rem;letter-spacing:.1em;line-height:1.7;color:#5a5a5a;
+}
+
 /* ---------- reveal ---------- */
 .rise{opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s ease}
 .rise.is-in{opacity:1;transform:none}
@@ -392,6 +438,29 @@ kbd{
       <div class="stat"><span class="stat__n">6</span><span class="stat__l">Glitches to dodge</span></div>
       <div class="stat"><span class="stat__n">2</span><span class="stat__l">Difficulty modes</span></div>
       <div class="stat"><span class="stat__n">∞</span><span class="stat__l">Global leaderboard</span></div>
+    </div>
+  </section>
+
+  <!-- ============================ LEADERBOARD ============================ -->
+  <section class="band" id="scores" style="padding-top:0">
+    <div class="wrap">
+      <p class="eyebrow rise">Live scores</p>
+      <h2 class="rise">Who&#8217;s winning right now.</h2>
+      <p class="lede rise">
+        Pulled straight from the same leaderboard the game writes to, so this is whatever
+        the top of the board looked like the moment you loaded this page.
+      </p>
+
+      <div class="board rise">
+        <div class="board__tabs" role="tablist" aria-label="Leaderboard difficulty">
+          <button class="board__tab is-on" type="button" role="tab" aria-selected="true" data-mode="standard">Standard</button>
+          <button class="board__tab" type="button" role="tab" aria-selected="false" data-mode="gradual">Gradual</button>
+          <button class="board__refresh" type="button" id="boardRefresh">Refresh</button>
+        </div>
+        <ol class="board__list" id="boardList"></ol>
+        <p class="board__msg" id="boardMsg">Loading the board&#8230;</p>
+      </div>
+      <p class="board__foot rise">Top 10 per mode &middot; scores are submitted by the game on Playdate</p>
     </div>
   </section>
 
@@ -516,6 +585,126 @@ kbd{
   });
 
   window.addEventListener('resize', fit);
+})();
+
+/* ---------------------------------------------------------------
+   Leaderboard — reads the same Supabase table the game writes to.
+   The anon key below is the one already shipped inside the .pdx.
+   IMPORTANT: check your RLS policies before publishing (see README).
+   --------------------------------------------------------------- */
+(function(){
+  var HOST = 'https://llkdjucqpwfemouwjpkd.supabase.co';
+  var KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxsa2RqdWNxcHdmZW1vdXdqcGtkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI0NzM4NDgsImV4cCI6MjA4ODA0OTg0OH0.UFy-96ACIDqhpuCEpKFm0R9SwgT3ipOYkeHlAuSJD_k';
+  var LIMIT = 10;
+
+  var list = document.getElementById('boardList');
+  var msg  = document.getElementById('boardMsg');
+  var refreshBtn = document.getElementById('boardRefresh');
+  var tabs = [].slice.call(document.querySelectorAll('.board__tab'));
+  if(!list || !msg) return;
+
+  var cache = {};
+  var mode = 'standard';
+  var loading = false;
+
+  function say(text){
+    list.innerHTML = '';
+    msg.textContent = text;
+    msg.classList.remove('is-hidden');
+  }
+
+  function render(rows){
+    list.innerHTML = '';
+    if(!rows.length){ say('No scores on this board yet. Somebody has to go first.'); return; }
+    msg.classList.add('is-hidden');
+
+    rows.forEach(function(row, i){
+      var li   = document.createElement('li');
+      var wrap = document.createElement('div');
+      wrap.className = 'board__row';
+
+      var rank = document.createElement('span');
+      rank.className = 'board__rank';
+      rank.textContent = (i + 1 < 10 ? '0' : '') + (i + 1);
+
+      /* textContent, never innerHTML — player names are arbitrary strings. */
+      var name = document.createElement('span');
+      name.className = 'board__name';
+      name.textContent = row.player_name || '???';
+
+      var score = document.createElement('span');
+      score.className = 'board__score';
+      score.textContent = Number(row.score || 0).toLocaleString('en-US');
+
+      wrap.appendChild(rank); wrap.appendChild(name); wrap.appendChild(score);
+      li.appendChild(wrap);
+      list.appendChild(li);
+    });
+  }
+
+  function load(which, force){
+    if(loading) return;
+    if(!force && cache[which]){ render(cache[which]); return; }
+
+    loading = true;
+    if(refreshBtn) refreshBtn.disabled = true;
+    say('Loading the board\u2026');
+
+    var url = HOST + '/rest/v1/scores'
+            + '?select=player_name,score'
+            + '&mode=eq.' + encodeURIComponent(which)
+            + '&order=score.desc'
+            + '&limit=' + LIMIT;
+
+    fetch(url, { headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, Accept: 'application/json' } })
+      .then(function(res){
+        if(!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function(rows){
+        if(!Array.isArray(rows)) throw new Error('Unexpected response');
+        cache[which] = rows;
+        if(which === mode) render(rows);
+      })
+      .catch(function(err){
+        console.error('[RotoCore] leaderboard fetch failed:', err);
+        if(which === mode) say('Can\u2019t reach the leaderboard right now. It\u2019s still live in the game.');
+      })
+      .then(function(){
+        loading = false;
+        if(refreshBtn) refreshBtn.disabled = false;
+      });
+  }
+
+  tabs.forEach(function(tab){
+    tab.addEventListener('click', function(){
+      if(tab.dataset.mode === mode) return;
+      mode = tab.dataset.mode;
+      tabs.forEach(function(t){
+        var on = t === tab;
+        t.classList.toggle('is-on', on);
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      load(mode, false);
+    });
+  });
+
+  if(refreshBtn){
+    refreshBtn.addEventListener('click', function(){ load(mode, true); });
+  }
+
+  /* Don't call the database until someone actually scrolls to the board. */
+  var section = document.getElementById('scores');
+  if('IntersectionObserver' in window && section){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){ io.disconnect(); load(mode, false); }
+      });
+    }, {rootMargin:'200px'});
+    io.observe(section);
+  } else {
+    load(mode, false);
+  }
 })();
 
 /* Missing screenshot files degrade into labelled placeholder tiles */

@@ -69,6 +69,43 @@ Three additions to `play/index.html`. **No changes to `game.js`, `styles.css` or
 If you'd rather not feature an older build, delete `play/` and remove the
 `hero__demo` block in `index.html` plus the footer link to it.
 
+## Live leaderboard
+
+The **Live scores** section reads the same Supabase table the game writes to:
+
+```
+GET /rest/v1/scores?select=player_name,score&mode=eq.standard&order=score.desc&limit=10
+```
+
+Standard and Gradual are tabs; each is fetched once and cached, and nothing is
+requested until you scroll the section into view. Names are rendered with
+`textContent`, never `innerHTML`, because they're arbitrary player-supplied strings.
+
+### Read this before you publish
+
+The site uses the same **anon key that's already inside your .pdx** — so it isn't a
+new secret, but a website makes it far easier to find. Anyone who opens devtools can
+copy it and call your API directly. Check your policies in the Supabase dashboard:
+
+- [ ] **RLS is enabled** on `scores`. If it's off, the anon key is full read/write.
+- [ ] `anon` has **SELECT**.
+- [ ] `anon` has **INSERT / UPDATE** — the game needs these to submit scores, which
+      also means a determined person can post a fake score. That's already true today.
+- [ ] `anon` has **no DELETE**. This is the one that matters most: it's the difference
+      between someone adding a junk score and someone wiping the whole board.
+- [ ] Consider a `CHECK (score >= 0 AND score < 10000000)` constraint so a garbage
+      score can't sit permanently at the top.
+
+If you'd rather not expose the key at all, the zero-trust version is a Supabase Edge
+Function with JWT verification off that returns the top 10 — then the site calls a
+plain public URL with no key. Worth doing if the board ever gets griefed; overkill
+until then.
+
+I couldn't test this against your live table from here, so open the browser console
+once after deploying. Any failure logs as `[RotoCore] leaderboard fetch failed`, and
+visitors see a graceful "can't reach the leaderboard" message rather than a broken
+section.
+
 ## Assets already included
 
 | File | What it is |
