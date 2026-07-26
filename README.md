@@ -40,8 +40,9 @@ Naming it `rotocore` gives a different, lowercase URL.
 pixelated so they stay crisp when scaled up, and lazy-loaded so they don't download
 until someone scrolls near them.
 
-The grid is 2x2 rather than 4-across, so motion has room to read. To swap one, drop a
-replacement in with the same filename. If a file is ever missing, that tile falls back
+They display at native 400x240 and are never upscaled — the columns are capped at
+400px and centred, so on narrow screens they shrink but never stretch. To swap one,
+drop a replacement in with the same filename. If a file is ever missing, that tile falls back
 to a dashed placeholder rather than a broken image.
 
 ## The playable prototype
