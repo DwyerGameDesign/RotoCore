@@ -156,6 +156,29 @@ section.
 | `assets/robodwyer.png` | your dev logo, recoloured white for the dark footer |
 | `assets/icon.png` | the game icon, used as the favicon |
 | `assets/screens/*.gif` | your four gameplay captures, optimised |
+| `assets/stars.png` | your itch starfield, cropped and compressed into a tile |
+
+## The starfield
+
+`assets/stars.png` is your itch background turned into a tile, rendered by the
+`.sky` div as one fixed layer behind everything at 60% opacity.
+
+Two things were done to it:
+
+- **Cropped 16px off every side.** The original has near-empty margins — the
+  outermost 8px of the left and bottom have zero stars. Tiled raw, those margins
+  line up into dark gutters every 1774px, a faint grid across the page. After the
+  crop, edge density matches the interior (0.57-0.74% vs 0.60%).
+- **Compressed 783 KB to 24 KB** via greyscale plus `pngquant`. It's 99.4% black,
+  so there was a lot of nothing to throw away.
+
+The layer is `position:fixed`, not a scrolling background. Content moves past a
+still sky, which reads as depth and avoids the same star pattern sliding past
+repeatedly on a long page. To dial it back or up, change `opacity` in `.sky`.
+
+Panels that were solid black are now translucent so the stars carry through: the
+stats cells, the leaderboard, and the prototype's stage — the console now floats
+directly on the starfield.
 
 ## Later, if you want a domain
 

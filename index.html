@@ -43,9 +43,10 @@
 
 *,*::before,*::after{box-sizing:border-box}
 html{scroll-behavior:smooth}
+html{background:var(--void)}
 body{
   margin:0;
-  background:var(--void);
+  background:transparent;
   color:var(--bone);
   font-family:var(--body);
   font-size:clamp(1rem,.96rem + .2vw,1.09rem);
@@ -54,6 +55,16 @@ body{
 }
 img{max-width:100%;display:block}
 a{color:var(--volt)}
+
+/* Starfield: one fixed layer behind everything. Fixed rather than scrolling, so
+   content moves past a still sky instead of dragging a repeating pattern with it.
+   The tile is cropped from the itch background — the raw file has empty margins
+   that tile as dark gutters. */
+.sky{
+  position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:url("assets/stars.png") repeat 0 0;
+  opacity:.6;
+}
 
 .wrap{width:min(1120px,92vw);margin-inline:auto}
 .band{padding:clamp(3.5rem,8vw,6.5rem) 0}
@@ -163,7 +174,7 @@ h2{
 .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:rgba(255,255,255,.16)}
 @media(min-width:760px){.stats{grid-template-columns:repeat(3,1fr)}}
 @media(min-width:1000px){.stats{grid-template-columns:repeat(6,1fr)}}
-.stat{background:var(--void);padding:1.5rem 1.1rem}
+.stat{background:rgba(0,0,0,.72);padding:1.5rem 1.1rem}
 .stat__n{
   font-family:var(--hud);font-weight:800;font-size:1.6rem;line-height:1;
   color:var(--volt);display:block;margin-bottom:.5rem;font-variant-numeric:tabular-nums;
@@ -221,13 +232,13 @@ h2{
 
 .proto__stage{
   position:relative;width:100%;max-width:560px;margin-inline:auto;aspect-ratio:540/560;
-  background:#333;border-radius:14px;overflow:hidden;
+  background:transparent;border-radius:14px;overflow:hidden;
 }
 .proto__frame{position:absolute;top:0;left:0;width:540px;height:560px;border:0;transform-origin:0 0}
 .proto__launch{
   position:absolute;inset:0;width:100%;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.7rem;
-  background:#111;border:0;cursor:pointer;color:var(--bone);
+  background:rgba(0,0,0,.55);border:0;cursor:pointer;color:var(--bone);
   font-family:var(--hud);text-transform:uppercase;
 }
 .proto__launch:hover .proto__launch-disc{background:var(--bone)}
@@ -263,7 +274,7 @@ kbd{
 }
 
 /* ---------- leaderboard ---------- */
-.board{border:2px solid rgba(255,255,255,.2);border-radius:12px;overflow:hidden;max-width:660px}
+.board{border:2px solid rgba(255,255,255,.2);border-radius:12px;overflow:hidden;max-width:660px;background:rgba(0,0,0,.55)}
 .board__tabs{display:flex;align-items:stretch;border-bottom:2px solid rgba(255,255,255,.2)}
 .board__tab{
   flex:1;appearance:none;background:transparent;border:0;cursor:pointer;
@@ -320,6 +331,7 @@ kbd{
 </head>
 
 <body>
+<div class="sky" aria-hidden="true"></div>
 
 <div class="wrap">
   <header class="topbar">
