@@ -1,0 +1,1456 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Courier Prime', 'Courier New', monospace;
+    background: #000;
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+}
+
+/* Screen Management */
+.screen {
+    display: none;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.screen.active {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+/* Playdate Console Frame */
+.playdate-console {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #333;
+}
+
+.console-body {
+    position: relative;
+    width: 480px;
+    height: 500px;
+    background-color: #FFC20E;
+    border-radius: 15px;
+    box-shadow:
+        inset 2px 2px 5px rgba(255, 255, 255, 0.3),
+        inset -2px -2px 5px rgba(0, 0, 0, 0.2),
+        10px 10px 20px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 50px;
+}
+
+.console-screen-bezel {
+    width: 424px;
+    height: 264px;
+    background-color: #000;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 10px;
+}
+
+.console-screen-aperture {
+    width: 400px;
+    height: 240px;
+    background: #111;
+    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.8);
+}
+
+#gameContainer {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+#gameCanvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* D-Pad */
+.console-controls {
+    width: 80%;
+    max-width: 360px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 30px 0 0;
+    margin: 0 auto;
+    position: relative;
+}
+
+.d-pad {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    margin-left: 12px;
+}
+
+.d-pad-up,
+.d-pad-down,
+.d-pad-left,
+.d-pad-right,
+.d-pad-center {
+    position: absolute;
+    background-color: #222;
+    border-radius: 2px;
+}
+
+.d-pad-center {
+    top: 30px;
+    left: 30px;
+    width: 20px;
+    height: 20px;
+    z-index: 2;
+}
+
+.d-pad-up {
+    top: 10px;
+    left: 30px;
+    width: 20px;
+    height: 30px;
+}
+
+.d-pad-down {
+    bottom: 10px;
+    left: 30px;
+    width: 20px;
+    height: 30px;
+}
+
+.d-pad-left {
+    top: 30px;
+    left: 10px;
+    width: 30px;
+    height: 20px;
+}
+
+.d-pad-right {
+    top: 30px;
+    right: 10px;
+    width: 30px;
+    height: 20px;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 10px;
+    margin-right: 12px;
+}
+
+.button-a-group,
+.button-b-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.button-b-group {
+    margin-top: 15px;
+}
+
+.console-button {
+    width: 24px;
+    height: 24px;
+    background-color: #D0D0D0;
+    /* Silver buttons */
+    border-radius: 50%;
+    box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.button-label {
+    font-size: 10px;
+    font-weight: bold;
+    color: #A08000;
+    /* Darker yellow/gold */
+    font-family: sans-serif;
+}
+
+/* Crank */
+.crank-assembly {
+    position: absolute;
+    right: -15px;
+    bottom: 60px;
+    width: 20px;
+    height: 60px;
+    background-color: #ccc;
+    border-radius: 5px;
+    z-index: -1;
+    /* Behind the console body */
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.crank-handle {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 15px;
+    height: 30px;
+    background-color: #fff;
+    /* Handle tip */
+    border-radius: 3px;
+    border: 1px solid #999;
+}
+
+/* Speaker Grill */
+.speaker-grill {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 4px;
+}
+
+.speaker-hole {
+    width: 3px;
+    height: 3px;
+    background-color: #C09000;
+    /* Darker yellow hole */
+    border-radius: 50%;
+}
+
+/* Adjustments for responsiveness */
+@media (max-width: 500px) {
+    .console-body {
+        transform: scale(0.7);
+    }
+}
+
+/* Main Menu Styles */
+.menu-content {
+    text-align: center;
+    padding: 1rem 1.5rem;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+.game-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: 0.1rem;
+    margin-bottom: 2rem;
+    color: #fff;
+    text-shadow: 4px 4px 0 #000;
+}
+
+.game-subtitle {
+    font-size: 1rem;
+    margin-bottom: 2.5rem;
+    color: #aaa;
+    letter-spacing: 0.1rem;
+}
+
+.menu-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    padding: 0 1.5rem;
+    position: relative;
+    width: 100%;
+    max-width: 300px;
+}
+
+.menu-btn {
+    padding: 0.6rem 1.2rem;
+    background: #fff;
+    border: 2px solid #000;
+    color: #000;
+    font-size: 0.8rem;
+    font-weight: 700;
+    font-family: 'Courier Prime', 'Courier New', monospace;
+    cursor: pointer;
+    transition: all 0.1s ease;
+    letter-spacing: 0.1rem;
+    min-width: 120px;
+}
+
+.menu-btn:hover {
+    background: #ddd;
+    transform: translate(2px, 2px);
+}
+
+.menu-btn:active {
+    background: #000;
+    color: #fff;
+    transform: translate(0, 0);
+}
+
+.menu-btn.selected {
+    position: relative;
+}
+
+.menu-btn.selected::before,
+.menu-btn.selected::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+    pointer-events: none;
+    line-height: 1;
+}
+
+.menu-btn.selected::before {
+    left: -1.8rem;
+    content: '[';
+}
+
+.menu-btn.selected::after {
+    right: -1.8rem;
+    content: ']';
+}
+
+/* Larger buttons for main menu */
+.menu-buttons .menu-btn {
+    padding: 0.6rem 1.4rem;
+    font-size: 0.95rem;
+    min-width: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+/* Play button - make it more prominent */
+#startButton {
+    font-size: 1.1rem;
+    padding: 0.7rem 1.5rem;
+    font-weight: 700;
+}
+
+/* Ship button canvas */
+#shipsButtonCanvas {
+    display: block;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    background: #000;
+    border: 1px solid #333;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Game Over Screen - contained within Playdate screen */
+.game-over {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    padding: 1rem;
+    border: none;
+    text-align: center;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.game-over.hidden {
+    display: none;
+}
+
+.game-over-title {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.2rem;
+}
+
+.game-over-subtitle {
+    font-size: 1rem;
+    color: #999;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.1rem;
+    display: none;
+}
+
+.score-container {
+    margin-bottom: 0.5rem;
+}
+
+.final-score {
+    font-size: 1.8rem;
+    margin-bottom: 0;
+    font-weight: 700;
+    display: inline-block;
+    position: relative;
+}
+
+.new-badge {
+    display: inline-block;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.1rem;
+    padding: 0.15rem 0.4rem;
+    margin-left: 0.5rem;
+    border: 1px solid #fff;
+    border-radius: 2px;
+    background: #000;
+    color: #fff;
+    vertical-align: middle;
+}
+
+.new-badge.hidden {
+    display: none;
+}
+
+
+
+/* Game Over Instructions */
+.game-over-instructions {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    align-items: center;
+}
+
+.game-over-instruction {
+    font-size: 0.875rem; /* 14px to match main menu */
+    font-weight: 700;
+    font-family: 'Courier Prime', 'Courier New', monospace;
+    color: #fff;
+    letter-spacing: 0.1rem;
+    margin: 0;
+    /* Create a strong stroke effect to match main menu canvas text */
+    text-shadow: 
+        -2px -2px 0 #000,
+        -2px -1px 0 #000,
+        -2px 0 0 #000,
+        -2px 1px 0 #000,
+        -2px 2px 0 #000,
+        2px -2px 0 #000,
+        2px -1px 0 #000,
+        2px 0 0 #000,
+        2px 1px 0 #000,
+        2px 2px 0 #000,
+        -1px -2px 0 #000,
+        0 -2px 0 #000,
+        1px -2px 0 #000,
+        -1px 2px 0 #000,
+        0 2px 0 #000,
+        1px 2px 0 #000,
+        -1px -1px 0 #000,
+        0 -1px 0 #000,
+        1px -1px 0 #000,
+        -1px 0 0 #000,
+        1px 0 0 #000,
+        -1px 1px 0 #000,
+        0 1px 0 #000,
+        1px 1px 0 #000; /* Mimic 2px stroke effect from main menu */
+}
+
+/* Rank Badge */
+.rank-badge {
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 0.15rem;
+    padding: 0.3rem 1rem;
+    margin-bottom: 0.8rem;
+    border: 2px solid #fff;
+    border-radius: 3px;
+    background: #000;
+    color: #fff;
+}
+
+/* Tier-specific styling - MONOCHROME ONLY */
+.rank-god {
+    border-width: 5px;
+    border-style: double;
+    text-shadow: 3px 3px 0 #fff, -1px -1px 0 #fff;
+    font-size: 1.5rem;
+}
+
+.rank-legendary {
+    border-width: 4px;
+    border-style: double;
+    text-shadow: 2px 2px 0 #fff;
+    font-size: 1.4rem;
+}
+
+.rank-champion {
+    border-width: 4px;
+    border-style: solid;
+    font-size: 1.35rem;
+}
+
+.rank-elite {
+    border-width: 3px;
+    border-style: double;
+    font-size: 1.3rem;
+}
+
+.rank-diamond {
+    border-width: 3px;
+    border-style: solid;
+    font-size: 1.25rem;
+}
+
+.rank-platinum {
+    border-width: 2px;
+    border-style: solid;
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.rank-gold {
+    border-width: 2px;
+    border-style: dashed;
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.rank-silver {
+    border-width: 2px;
+    border-style: dotted;
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.rank-bronze {
+    border-width: 2px;
+    border-style: solid;
+    font-weight: 400;
+    font-size: 1.2rem;
+}
+
+/* Death Info Section */
+.death-info {
+    margin-bottom: 0.3rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.05rem;
+}
+
+.death-label {
+    color: #999;
+    margin-right: 0.3rem;
+}
+
+.death-cause {
+    font-weight: 700;
+    color: #fff;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 900px) {
+
+    /* Removed old playdate-screen styles as they are now handled by the console frame */
+    #gameCanvas {
+        width: 100%;
+        height: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .game-title {
+        font-size: 3rem;
+    }
+
+    .hud {
+        top: 4px;
+        left: 8px;
+        right: 8px;
+        padding-top: 4px;
+    }
+
+    .hud-label {
+        font-size: 0.6rem;
+    }
+
+    .hud-value {
+        font-size: 1.2rem;
+    }
+
+    .powerup-options {
+        flex-direction: column;
+    }
+
+    .game-over {
+        min-width: 300px;
+        padding: 1.5rem 2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .game-title {
+        font-size: 2rem;
+    }
+}
+
+/* Category badges (monochrome - use different border styles) */
+.category-LASER {
+    border-style: solid;
+}
+
+.category-SIDEKICK {
+    border-style: dashed;
+}
+
+.category-ORBITAL {
+    border-style: dotted;
+}
+
+.category-DEFENSE {
+    border-style: double;
+}
+
+.category-INSTANT {
+    border-style: solid;
+    border-width: 2px;
+}
+
+.category-CHAOS {
+    border-style: solid;
+    border-width: 3px;
+}
+
+/* Rarity badges (monochrome - use different font weights) */
+.rarity-COMMON {
+    font-weight: 400;
+}
+
+.rarity-RARE {
+    font-weight: 700;
+}
+
+.rarity-EPIC {
+    font-weight: 700;
+    text-decoration: underline;
+}
+
+.powerup-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    margin-top: 1.5rem;
+    /* Space for badges */
+}
+
+.powerup-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.powerup-desc {
+    font-size: 0.75rem;
+    color: #999;
+    line-height: 1.3;
+}
+
+.powerup-instruction {
+    font-size: 0.8rem;
+    color: #999;
+}
+
+/* Game Over Screen - contained within Playdate screen */
+.game-over {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    padding: 1rem;
+    border: none;
+    text-align: center;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.game-over.hidden {
+    display: none;
+}
+
+.game-over-title {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.2rem;
+}
+
+.game-over-subtitle {
+    font-size: 1rem;
+    color: #999;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.1rem;
+    display: none;
+}
+
+.score-container {
+    margin-bottom: 0.5rem;
+}
+
+.final-score {
+    font-size: 1.8rem;
+    margin-bottom: 0;
+    font-weight: 700;
+    display: inline-block;
+    position: relative;
+}
+
+.new-badge {
+    display: inline-block;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.1rem;
+    padding: 0.15rem 0.4rem;
+    margin-left: 0.5rem;
+    border: 1px solid #fff;
+    border-radius: 2px;
+    background: #000;
+    color: #fff;
+    vertical-align: middle;
+}
+
+.new-badge.hidden {
+    display: none;
+}
+
+
+
+/* Game Over Instructions */
+.game-over-instructions {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    align-items: center;
+}
+
+.game-over-instruction {
+    font-size: 0.875rem; /* 14px to match main menu */
+    font-weight: 700;
+    font-family: 'Courier Prime', 'Courier New', monospace;
+    color: #fff;
+    letter-spacing: 0.1rem;
+    margin: 0;
+    /* Create a strong stroke effect to match main menu canvas text */
+    text-shadow: 
+        -2px -2px 0 #000,
+        -2px -1px 0 #000,
+        -2px 0 0 #000,
+        -2px 1px 0 #000,
+        -2px 2px 0 #000,
+        2px -2px 0 #000,
+        2px -1px 0 #000,
+        2px 0 0 #000,
+        2px 1px 0 #000,
+        2px 2px 0 #000,
+        -1px -2px 0 #000,
+        0 -2px 0 #000,
+        1px -2px 0 #000,
+        -1px 2px 0 #000,
+        0 2px 0 #000,
+        1px 2px 0 #000,
+        -1px -1px 0 #000,
+        0 -1px 0 #000,
+        1px -1px 0 #000,
+        -1px 0 0 #000,
+        1px 0 0 #000,
+        -1px 1px 0 #000,
+        0 1px 0 #000,
+        1px 1px 0 #000; /* Mimic 2px stroke effect from main menu */
+}
+
+/* Mobile Responsiveness - Duplicate removed, see first instance above */
+
+@media (max-width: 480px) {
+    .game-title {
+        font-size: 2rem;
+    }
+
+    .game-subtitle {
+        font-size: 0.9rem;
+    }
+
+    .menu-btn {
+        font-size: 1rem;
+        padding: 0.75rem 1.5rem;
+        min-width: 160px;
+    }
+}
+
+/* HUD Display */
+.hud {
+    position: absolute;
+    top: 0px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0px 10px 8px;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.hud-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.hud-item-left {
+    align-items: flex-start;
+}
+
+.hud-item-right {
+    align-items: flex-end;
+    text-align: right;
+}
+
+.hud-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.05rem;
+    color: #bbb;
+    margin-bottom: -0.2rem;
+}
+
+.hud-value {
+    font-size: 1.0rem;
+    font-weight: 700;
+}
+
+.powerup-options {
+    flex-direction: column;
+}
+
+.game-over {
+    min-width: 300px;
+    padding: 1.5rem 2rem;
+}
+
+@media (max-width: 480px) {
+    .game-title {
+        font-size: 2rem;
+    }
+}
+
+/* Category badges (monochrome - use different border styles) */
+.category-LASER {
+    border-style: solid;
+}
+
+.category-SIDEKICK {
+    border-style: dashed;
+}
+
+.category-ORBITAL {
+    border-style: dotted;
+}
+
+.category-DEFENSE {
+    border-style: double;
+}
+
+.category-INSTANT {
+    border-style: solid;
+    border-width: 2px;
+}
+
+.category-CHAOS {
+    border-style: solid;
+    border-width: 3px;
+}
+
+/* Rarity badges (monochrome - use different font weights) */
+.rarity-COMMON {
+    font-weight: 400;
+}
+
+.rarity-RARE {
+    font-weight: 700;
+}
+
+.rarity-EPIC {
+    font-weight: 700;
+    text-decoration: underline;
+}
+
+.powerup-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    margin-top: 1.5rem;
+    /* Space for badges */
+}
+
+.powerup-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.powerup-desc {
+    font-size: 0.75rem;
+    color: #999;
+    line-height: 1.3;
+}
+
+.powerup-instruction {
+    font-size: 0.8rem;
+    color: #999;
+}
+
+/* Game Over Screen - contained within Playdate screen */
+.game-over {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    padding: 1rem;
+    border: none;
+    text-align: center;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.game-over.hidden {
+    display: none;
+}
+
+.game-over-title {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.2rem;
+}
+
+.game-over-subtitle {
+    font-size: 1rem;
+    color: #999;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.1rem;
+    display: none;
+}
+
+.score-container {
+    margin-bottom: 0.5rem;
+}
+
+.final-score {
+    font-size: 1.8rem;
+    margin-bottom: 0;
+    font-weight: 700;
+    display: inline-block;
+    position: relative;
+}
+
+.new-badge {
+    display: inline-block;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.1rem;
+    padding: 0.15rem 0.4rem;
+    margin-left: 0.5rem;
+    border: 1px solid #fff;
+    border-radius: 2px;
+    background: #000;
+    color: #fff;
+    vertical-align: middle;
+}
+
+.new-badge.hidden {
+    display: none;
+}
+
+
+
+/* Game Over Instructions */
+.game-over-instructions {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    align-items: center;
+}
+
+.game-over-instruction {
+    font-size: 0.875rem; /* 14px to match main menu */
+    font-weight: 700;
+    font-family: 'Courier Prime', 'Courier New', monospace;
+    color: #fff;
+    letter-spacing: 0.1rem;
+    margin: 0;
+    /* Create a strong stroke effect to match main menu canvas text */
+    text-shadow: 
+        -2px -2px 0 #000,
+        -2px -1px 0 #000,
+        -2px 0 0 #000,
+        -2px 1px 0 #000,
+        -2px 2px 0 #000,
+        2px -2px 0 #000,
+        2px -1px 0 #000,
+        2px 0 0 #000,
+        2px 1px 0 #000,
+        2px 2px 0 #000,
+        -1px -2px 0 #000,
+        0 -2px 0 #000,
+        1px -2px 0 #000,
+        -1px 2px 0 #000,
+        0 2px 0 #000,
+        1px 2px 0 #000,
+        -1px -1px 0 #000,
+        0 -1px 0 #000,
+        1px -1px 0 #000,
+        -1px 0 0 #000,
+        1px 0 0 #000,
+        -1px 1px 0 #000,
+        0 1px 0 #000,
+        1px 1px 0 #000; /* Mimic 2px stroke effect from main menu */
+}
+
+/* Mobile Responsiveness - Duplicate removed, see first instance above */
+
+@media (max-width: 480px) {
+    .game-title {
+        font-size: 2rem;
+    }
+
+    .game-subtitle {
+        font-size: 0.9rem;
+    }
+
+    .menu-btn {
+        font-size: 1rem;
+        padding: 0.75rem 1.5rem;
+        min-width: 160px;
+    }
+}
+
+/* HUD Display */
+.hud {
+    position: absolute;
+    top: 0px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0px 10px 8px;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.hud-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.hud-item-left {
+    align-items: flex-start;
+}
+
+.hud-item-right {
+    align-items: flex-end;
+    text-align: right;
+}
+
+.hud-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.05rem;
+    color: #bbb;
+    margin-bottom: -0.2rem;
+}
+
+.hud-value {
+    font-size: 1.0rem;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 0 6px rgba(0, 0, 0, 0.6);
+}
+
+.hud.hidden {
+    display: none;
+}
+
+/* Pause Menu */
+.pause-menu {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    padding: 0.5rem;
+    /* Reduced padding */
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(2px);
+}
+
+.pause-menu.hidden {
+    display: none;
+}
+
+.pause-title {
+    font-size: 1.8rem;
+    /* Reduced from 2.5rem */
+    margin-bottom: 1rem;
+    /* Reduced from 2rem */
+    letter-spacing: 0.2rem;
+    color: #fff;
+    text-shadow: 2px 2px 0 #000;
+}
+
+/* Settings Toggles */
+.setting-toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 200px;
+    /* Reduced width */
+    padding: 0.4rem 0.8rem;
+    /* Reduced padding */
+    background: #000;
+    border: 2px solid #fff;
+    color: #fff;
+    font-family: 'Courier Prime', 'Courier New', monospace;
+    cursor: pointer;
+    transition: all 0.1s ease;
+    margin-bottom: 0.4rem;
+    /* Reduced margin */
+}
+
+.setting-toggle:hover {
+    background: #333;
+    transform: translate(2px, 2px);
+}
+
+.setting-toggle.active {
+    background: #fff;
+    color: #000;
+}
+
+.setting-label {
+    font-size: 0.7rem;
+    /* Reduced font size */
+    font-weight: 700;
+    letter-spacing: 0.05rem;
+}
+
+.setting-value {
+    font-size: 0.7rem;
+    /* Reduced font size */
+    font-weight: 700;
+}
+
+/* Compact menu buttons for pause menu */
+.pause-menu .menu-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    min-width: 120px;
+    margin-bottom: 0.2rem;
+}
+
+/* Stats Screen */
+.stats-content {
+    text-align: center;
+    padding: 0.5rem 1rem;
+    width: 100%;
+    max-height: 240px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.stats-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #fff;
+}
+
+/* Core Stats Grid */
+.stats-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.15rem 0.5rem;
+    border-bottom: 1px solid #333;
+}
+
+.stat-label {
+    font-size: 0.65rem;
+    color: #aaa;
+    letter-spacing: 0.05rem;
+    text-align: left;
+}
+
+.stat-value {
+    font-size: 0.65rem;
+    color: #fff;
+    font-weight: 700;
+    text-align: right;
+}
+
+/* Enemy Section */
+.stats-section {
+    margin-bottom: 0.5rem;
+}
+
+.stats-section-title {
+    font-size: 0.7rem;
+    color: #999;
+    letter-spacing: 0.1rem;
+    margin-bottom: 0.2rem;
+    border-bottom: 1px solid #444;
+    padding-bottom: 0.15rem;
+}
+
+.stats-grid-compact {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.enemy-icons-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.2rem;
+}
+
+.enemy-counts-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.2rem;
+}
+
+.stat-label-small {
+    font-size: 0.7rem;
+    color: #fff;
+    text-align: center;
+}
+
+.stat-value-small {
+    font-size: 0.55rem;
+    color: #fff;
+    font-weight: 700;
+    text-align: center;
+}
+
+/* Nemesis Section */
+.stats-nemesis {
+    margin-bottom: 0.5rem;
+    padding: 0.3rem 0.5rem;
+    background: #111;
+    border: 1px solid #444;
+    border-radius: 2px;
+}
+
+.nemesis-label {
+    font-size: 0.6rem;
+    color: #f44;
+    letter-spacing: 0.1rem;
+    margin-right: 0.3rem;
+}
+
+.nemesis-value {
+    font-size: 0.7rem;
+    color: #fff;
+    font-weight: 700;
+}
+
+/* Stats Back Button */
+.stats-content .menu-btn {
+    padding: 0.4rem 1.5rem;
+    font-size: 0.75rem;
+    margin-top: 0.2rem;
+}
+
+/* Upgrade Screen */
+.upgrade-content {
+    text-align: center;
+    padding: 1rem;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.upgrade-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 0.15rem;
+    margin-bottom: 0.8rem;
+    color: #fff;
+}
+
+.tokens-available {
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: #fff;
+    letter-spacing: 0.05rem;
+}
+
+.upgrade-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+}
+
+.upgrade-stat-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: space-between;
+    padding: 0 0.5rem;
+    position: relative;
+}
+
+.upgrade-stat-row.selected {
+    position: relative;
+}
+
+.upgrade-stat-row.selected::before,
+.upgrade-stat-row.selected::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+    pointer-events: none;
+    line-height: 1;
+}
+
+.upgrade-stat-row.selected::before {
+    left: -1.2rem;
+    content: '[';
+}
+
+.upgrade-stat-row.selected::after {
+    right: -1.2rem;
+    content: ']';
+}
+
+.upgrade-stat-label {
+    font-size: 0.7rem;
+    min-width: 80px;
+    text-align: left;
+    color: #fff;
+    letter-spacing: 0.05rem;
+}
+
+.upgrade-bubbles {
+    display: flex;
+    gap: 0.25rem;
+    flex: 1;
+    justify-content: center;
+}
+
+.upgrade-bubble {
+    width: 14px;
+    height: 14px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: transparent;
+}
+
+.upgrade-bubble.filled {
+    background: #fff;
+}
+
+.upgrade-btn {
+    padding: 0.3rem 0.6rem;
+    background: #fff;
+    border: 2px solid #000;
+    color: #000;
+    font-size: 0.8rem;
+    font-weight: 700;
+    font-family: 'Courier Prime', 'Courier New', monospace;
+    cursor: pointer;
+    min-width: 40px;
+    transition: all 0.1s ease;
+}
+
+.upgrade-btn:hover:not(:disabled) {
+    background: #ddd;
+    transform: translate(2px, 2px);
+}
+
+.upgrade-btn:active:not(:disabled) {
+    background: #000;
+    color: #fff;
+}
+
+.upgrade-btn:disabled {
+    background: #333;
+    color: #666;
+    cursor: not-allowed;
+    border-color: #666;
+}
+
+.navigation-hint {
+    font-size: 0.55rem;
+    color: #666;
+    margin-top: 0.5rem;
+    letter-spacing: 0.05rem;
+}

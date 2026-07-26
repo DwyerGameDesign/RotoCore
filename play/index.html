@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>RotoCore</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="playdate-console">
+        <div class="console-body">
+            <div class="console-screen-bezel">
+                <div class="console-screen-aperture">
+                    <!-- Stats Screen -->
+                    <div id="statsScreen" class="screen">
+                        <div class="stats-content">
+                            <h1 class="stats-title">STATISTICS</h1>
+                            
+                            <!-- Core Stats Grid -->
+                            <div class="stats-grid">
+                                <div class="stat-row">
+                                    <span class="stat-label">HIGH SCORE</span>
+                                    <span class="stat-value" id="statsHighScore">0</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">GAMES PLAYED</span>
+                                    <span class="stat-value" id="statsGamesPlayed">0</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">AVG SCORE</span>
+                                    <span class="stat-value" id="statsAvgScore">0</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">SURVIVAL TIME</span>
+                                    <span class="stat-value" id="statsSurvivalTime">0:00:00</span>
+                                </div>
+                            </div>
+
+                            <!-- Enemy Breakdown Section -->
+                            <div class="stats-section">
+                                <h2 class="stats-section-title">ENEMIES DESTROYED</h2>
+                                <div class="stats-grid-compact">
+                                    <div class="enemy-icons-row">
+                                        <span class="stat-label-small">◆</span>
+                                        <span class="stat-label-small">●</span>
+                                        <span class="stat-label-small">■</span>
+                                        <span class="stat-label-small">⬟</span>
+                                        <span class="stat-label-small">⬢</span>
+                                    </div>
+                                    <div class="enemy-counts-row">
+                                        <span class="stat-value-small" id="statsDiamond">0</span>
+                                        <span class="stat-value-small" id="statsCircle">0</span>
+                                        <span class="stat-value-small" id="statsSquare">0</span>
+                                        <span class="stat-value-small" id="statsPentagon">0</span>
+                                        <span class="stat-value-small" id="statsHexagon">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upgrade Ship Screen -->
+                    <div id="upgradeShipScreen" class="screen">
+                        <div class="upgrade-content">
+                            <h1 class="upgrade-title">UPGRADES</h1>
+                            
+                            <div class="tokens-available">
+                                TOKENS AVAILABLE: <span id="tokensAvailable">0</span>
+                            </div>
+                            
+                            <div class="upgrade-stats">
+                                <!-- Ship Stats -->
+                                <div class="upgrade-stat-row">
+                                    <span class="upgrade-stat-label">ROTATION</span>
+                                    <div class="upgrade-bubbles" id="upgradeRotationBubbles"></div>
+                                    <button class="upgrade-btn" id="upgradeRotationBtn">+</button>
+                                </div>
+                                
+                                <div class="upgrade-stat-row">
+                                    <span class="upgrade-stat-label">DAMAGE</span>
+                                    <div class="upgrade-bubbles" id="upgradeDamageBubbles"></div>
+                                    <button class="upgrade-btn" id="upgradeDamageBtn">+</button>
+                                </div>
+                                
+                                <div class="upgrade-stat-row">
+                                    <span class="upgrade-stat-label">WIDTH</span>
+                                    <div class="upgrade-bubbles" id="upgradeWidthBubbles"></div>
+                                    <button class="upgrade-btn" id="upgradeWidthBtn">+</button>
+                                </div>
+                                
+                                <!-- Powerup Stats -->
+                                <div class="upgrade-stat-row">
+                                    <span class="upgrade-stat-label">NOVA BLAST</span>
+                                    <div class="upgrade-bubbles" id="upgradeNovaBlastBubbles"></div>
+                                    <button class="upgrade-btn" id="upgradeNovaBlastBtn">+</button>
+                                </div>
+                                
+                                <div class="upgrade-stat-row">
+                                    <span class="upgrade-stat-label">SUPER LASER</span>
+                                    <div class="upgrade-bubbles" id="upgradeSuperLaserBubbles"></div>
+                                    <button class="upgrade-btn" id="upgradeSuperLaserBtn">+</button>
+                                </div>
+                            </div>
+                            
+                            <p class="navigation-hint">B: BACK TO MENU</p>
+                        </div>
+                    </div>
+
+                    <!-- Game Container -->
+                    <div id="gameContainer" class="screen active">
+                        <!-- HUD Display -->
+                        <div class="hud">
+                            <div class="hud-item hud-item-left">
+                                <span class="hud-label">SCORE</span>
+                                <span id="score" class="hud-value">0</span>
+                            </div>
+                            <div class="hud-item hud-item-right">
+                                <span class="hud-label">HIGH</span>
+                                <span id="highscore" class="hud-value">0</span>
+                            </div>
+                        </div>
+                        <canvas id="gameCanvas"></canvas>
+
+                        <!-- Game Over Screen -->
+                        <div id="gameOver" class="game-over hidden">
+                            <h1 class="game-over-title">CORE BREACHED</h1>
+                            
+                            <!-- Score Display with New Badge -->
+                            <div class="score-container">
+                                <p class="final-score">
+                                    SCORE: <span id="finalScore">0</span>
+                                    <span id="newBadge" class="new-badge hidden">New Best</span>
+                                </p>
+                            </div>
+                            
+                            <!-- Death Cause Section -->
+                            <p class="death-info">
+                                <span class="death-label">DESTROYED BY:</span>
+                                <span id="deathCause" class="death-cause">COLLISION</span>
+                            </p>
+                            
+                            <div class="game-over-instructions">
+                                <p class="game-over-instruction">Ⓐ CONTINUE</p>
+                            </div>
+                        </div>
+
+                        <!-- Pause Menu -->
+                        <div id="pauseMenu" class="pause-menu hidden">
+                            <h1 class="pause-title">PAUSED</h1>
+                            <div class="menu-buttons">
+                                <button id="resumeBtn" class="menu-btn">RESUME</button>
+                                <button id="pauseStatsBtn" class="menu-btn">STATS</button>
+                                <div class="setting-toggle" id="toggleShake">
+                                    <span class="setting-label">SCREEN SHAKE</span>
+                                    <span class="setting-value">ON</span>
+                                </div>
+                                <div class="setting-toggle" id="toggleGrid">
+                                    <span class="setting-label">GRID</span>
+                                    <span class="setting-value">ON</span>
+                                </div>
+                                <button id="quitBtn" class="menu-btn">MAIN MENU</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="console-controls">
+                <div class="d-pad">
+                    <div class="d-pad-up"></div>
+                    <div class="d-pad-right"></div>
+                    <div class="d-pad-down"></div>
+                    <div class="d-pad-left"></div>
+                    <div class="d-pad-center"></div>
+                </div>
+                <div class="action-buttons">
+                    <div class="button-b-group">
+                        <div class="console-button"></div>
+                        <span class="button-label">B</span>
+                    </div>
+                    <div class="button-a-group">
+                        <div class="console-button"></div>
+                        <span class="button-label">A</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Crank -->
+            <div class="crank-assembly">
+                <div class="crank-arm"></div>
+                <div class="crank-handle"></div>
+            </div>
+
+            <!-- Speaker Grill -->
+            <div class="speaker-grill">
+                <div class="speaker-hole"></div>
+                <div class="speaker-hole"></div>
+                <div class="speaker-hole"></div>
+                <div class="speaker-hole"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="configs/enemies.js"></script>
+    <script src="configs/powerups.js"></script>
+    <script src="game.js"></script>
+</body>
+
+</html>
