@@ -6,30 +6,29 @@
 // Lower values = faster spawning (more enemies)
 // Higher values = slower spawning (fewer enemies)
 const ENEMY_SPAWN_INTERVALS = {
-    phase1: 1000,  // 1 second between spawns in phase 1
-    phase2: 800,   // 0.8 seconds between spawns in phase 2
-    phase3: 750,   // 0.6 seconds between spawns in phase 3
-    phase4: 700,   // 0.5 seconds between spawns in phase 4
-    phase5: 650    // 0.5 seconds between spawns in phase 5
+    // Retuned to match the shipping Playdate build's "standard" curve.
+    // Was: 1000 / 800 / 750 / 700 / 650 — the old opening was twice as slow as the real game.
+    phase1: 500,
+    phase2: 750,
+    phase3: 750,
+    phase4: 700,
+    phase5: 650
 };
 
 // Burst Event Interval Configuration (milliseconds between burst events)
 // Defines the min and max time between burst events for each phase
 const BURST_INTERVALS = {
-/*
-    phase1: { min: 5000, max: 10000 }, // 15-25s
-    phase2: { min: 5000, max: 10000 }, // 20-30s
-    phase3: { min: 5000, max: 10000 }, // 25-35s
-    phase4: { min: 5000, max: 10000 }, // 30-45s
-    phase5: { min: 5000, max: 10000 }  // 40-60s
-*/
-    phase1: { min: 15000, max: 25000 }, // 15-25s
-    phase2: { min: 15000, max: 25000 }, // 20-30s
-    phase3: { min: 15000, max: 25000 }, // 25-35s
-    phase4: { min: 15000, max: 25000 }, // 30-45s
-    phase5: { min: 15000, max: 25000 }  // 40-60s    
-    
+    // Shipping build uses 15-20s / 10-15s / 10-15s / 15-20s / 15-22.5s. A prototype
+    // session is short, so these are compressed ~30% — waves are the thing worth showing.
+    phase1: { min: 10000, max: 14000 },
+    phase2: { min: 8000,  max: 12000 },
+    phase3: { min: 8000,  max: 12000 },
+    phase4: { min: 10000, max: 14000 },
+    phase5: { min: 10000, max: 15000 }
 };
+
+// The first wave of a run ignores the table above, so nobody quits before seeing one.
+const FIRST_BURST_DELAY = { min: 6000, max: 8000 };
 
 // Enemy Types Configuration (geometric shapes)
 // spawnWeight: Probability weight for each score bracket
@@ -611,3 +610,80 @@ const ENEMY_BURST_EVENTS = [
         ] // 10 * 1 + 16 * 15 + 8 * 1 + 1 * 150 = 10 + 240 + 8 + 150 = 408 HP
     },
 ];
+
+// ==========================================
+// Waves ported from the shipping Playdate build (enemyTypes.lua).
+// Same schema, phase6 weights dropped since the prototype only has five phases.
+// ==========================================
+const PORTED_BURST_EVENTS = [
+    {
+        name: 'Raindown',
+        weight: { phase1: 1.0, phase2: 1.0, phase3: 0, phase4: 0, phase5: 0 },
+        enemies: [
+            { type: 'CIRCLE', count: 4, delay: 0,   position: { rx: 0.25, ry: 0 }},
+            { type: 'CIRCLE', count: 4, delay: 300, position: { rx: 0.5,  ry: 0 }},
+            { type: 'CIRCLE', count: 4, delay: 0,   position: { rx: 0.75, ry: 0 }}
+        ]
+    },
+    {
+        name: 'Side Swipers',
+        weight: { phase1: 1.0, phase2: 1.0, phase3: 0, phase4: 0, phase5: 0 },
+        enemies: [
+            { type: 'DIAMOND', count: 3, delay: 0,    position: { rx: 0, ry: 0.4 }},
+            { type: 'DIAMOND', count: 3, delay: 500,  position: { rx: 1, ry: 0.6 }},
+            { type: 'DIAMOND', count: 4, delay: 1000, position: { rx: 0, ry: 0.6 }},
+            { type: 'DIAMOND', count: 4, delay: 1500, position: { rx: 1, ry: 0.4 }}
+        ]
+    },
+    {
+        name: 'The Sprinkler',
+        weight: { phase1: 0.5, phase2: 0.5, phase3: 0, phase4: 0, phase5: 0 },
+        enemies: [
+            { type: 'CIRCLE', count: 2, delay: 0,    position: { rx: 0, ry: 0.2 }},
+            { type: 'CIRCLE', count: 2, delay: 400,  position: { rx: 0, ry: 0.4 }},
+            { type: 'CIRCLE', count: 2, delay: 800,  position: { rx: 0, ry: 0.6 }},
+            { type: 'CIRCLE', count: 2, delay: 1200, position: { rx: 0, ry: 0.8 }},
+            { type: 'CIRCLE', count: 2, delay: 1600, position: { rx: 0, ry: 0.6 }},
+            { type: 'CIRCLE', count: 2, delay: 2000, position: { rx: 0, ry: 0.4 }},
+            { type: 'CIRCLE', count: 2, delay: 2400, position: { rx: 0, ry: 0.2 }},
+            { type: 'CIRCLE', count: 2, delay: 2800, position: { rx: 0, ry: 0.5 }}
+        ]
+    },
+    {
+        name: 'Wide Net',
+        weight: { phase1: 0, phase2: 0.6, phase3: 0.3, phase4: 0.1, phase5: 0 },
+        enemies: [
+            { type: 'DIAMOND', count: 2, delay: 0,   position: { rx: 0.15, ry: 0 }},
+            { type: 'DIAMOND', count: 2, delay: 0,   position: { rx: 0.35, ry: 0 }},
+            { type: 'DIAMOND', count: 2, delay: 0,   position: { rx: 0.5,  ry: 0 }},
+            { type: 'DIAMOND', count: 2, delay: 0,   position: { rx: 0.65, ry: 0 }},
+            { type: 'DIAMOND', count: 2, delay: 0,   position: { rx: 0.85, ry: 0 }},
+            { type: 'SQUARE',  count: 1, delay: 500, position: { rx: 0,    ry: 0.2 }},
+            { type: 'SQUARE',  count: 1, delay: 500, position: { rx: 1,    ry: 0.2 }}
+        ]
+    },
+    {
+        name: 'Circle Carousel',
+        weight: { phase1: 0, phase2: 1.25, phase3: 0.5, phase4: 0.25, phase5: 0 },
+        enemies: [
+            { type: 'CIRCLE', count: 8, delay: 0,    position: { rx: 0.5, ry: 0 }},
+            { type: 'CIRCLE', count: 8, delay: 600,  position: { rx: 1,   ry: 0.5 }},
+            { type: 'CIRCLE', count: 8, delay: 1200, position: { rx: 0.5, ry: 1 }},
+            { type: 'CIRCLE', count: 6, delay: 1800, position: { rx: 0,   ry: 0.5 }}
+        ]
+    },
+    {
+        name: 'Zigzag Assault',
+        weight: { phase1: 0, phase2: 0, phase3: 1.25, phase4: 0.5, phase5: 0.25 },
+        enemies: [
+            { type: 'CIRCLE',   count: 2, delay: 0,    position: { rx: 0, ry: 0.25 }},
+            { type: 'PENTAGON', count: 1, delay: 0,    position: { rx: 0, ry: 0.25 }},
+            { type: 'CIRCLE',   count: 2, delay: 1000, position: { rx: 1, ry: 0.5 }},
+            { type: 'PENTAGON', count: 1, delay: 1000, position: { rx: 1, ry: 0.5 }},
+            { type: 'CIRCLE',   count: 2, delay: 2000, position: { rx: 0, ry: 0.75 }},
+            { type: 'PENTAGON', count: 1, delay: 2000, position: { rx: 0, ry: 0.75 }}
+        ]
+    }
+];
+
+ENEMY_BURST_EVENTS.push.apply(ENEMY_BURST_EVENTS, PORTED_BURST_EVENTS);

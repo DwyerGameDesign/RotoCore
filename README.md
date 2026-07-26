@@ -81,6 +81,44 @@ Standard and Gradual are tabs; each is fetched once and cached, and nothing is
 requested until you scroll the section into view. Names are rendered with
 `textContent`, never `innerHTML`, because they're arbitrary player-supplied strings.
 
+## Prototype pacing (retuned)
+
+The prototype felt slow next to the device build for a structural reason: the real
+game is played with a crank, and a keyboard can't match that. So rotation is faster
+than the shipping numbers rather than equal to them. All changes are commented in
+place with their old values.
+
+**`play/game.js`**
+
+| Constant | Was | Now | Why |
+|---|---|---|---|
+| `ROTATION_SPEED` | `0.06` | `0.105` | full sweep in ~2s instead of ~3.5s |
+| `ROTATION_RAMP_FRAMES` | — | `12` | 0.4s of holding to reach top speed |
+| `ROTATION_RAMP_MAX` | — | `1.6` | held sweep reaches ~1.25s per rotation |
+
+Tapping still nudges precisely; only holding accelerates. The device build's own
+d-pad fallback is `0.06` (`playerConfig.lua`) — matching it exactly is what made this
+feel sluggish, since on hardware the d-pad is the backup and the crank is the game.
+
+**`play/configs/enemies.js`**
+
+| Setting | Was | Now |
+|---|---|---|
+| Spawn interval, phase 1 | 1000ms | **500ms** (the shipping value) |
+| Spawn interval, phases 2-5 | 800/750/700/650 | 750/750/700/650 (shipping curve) |
+| Burst interval, all phases | flat 15-25s | 10-14s / 8-12s / 8-12s / 10-14s / 10-15s |
+| First wave of a run | 15-25s | **6-8s** |
+
+The old phase-1 spawn rate was exactly half the shipping game's — that alone made the
+opening thirty seconds feel empty. The flat burst timing was the other problem: with a
+first wave 15-25 seconds out, most people quit before seeing a single one.
+
+**Six waves ported from `enemyTypes.lua`,** unchanged apart from dropping the phase 6
+weights: Raindown, Side Swipers, The Sprinkler, Wide Net, Circle Carousel, Zigzag
+Assault. That's 37 waves total, 7 of them reachable in phase 1.
+
+To revert any of this, the old values are in the comments.
+
 ### Read this before you publish
 
 The site uses the same **anon key that's already inside your .pdx** — so it isn't a

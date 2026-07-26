@@ -14,7 +14,11 @@ canvas.width = 400;
 canvas.height = 240;
 
 // Game Constants
-const ROTATION_SPEED = 0.06; // Doubled for 30fps
+// Prototype tuning: a keyboard can't do what a crank does, so key rotation is
+// faster than the device build's 0.06 d-pad fallback, and ramps up while held.
+const ROTATION_SPEED = 0.105;      // was 0.06 — ~2s for a full sweep instead of ~3.5s
+const ROTATION_RAMP_FRAMES = 12;   // 0.4s at 30fps to reach full speed
+const ROTATION_RAMP_MAX = 1.6;     // ramps to ~1.25s for a full sweep
 // NOTE: For Playdate port, replace keyboard input with crank rotation:
 // rotation = playdate.getCrankChange() * CRANK_SENSITIVITY
 let LASER_DAMAGE = 1.5; // Changed to variable to support ship stats
@@ -1440,6 +1444,11 @@ function spawnEnemy() {
 
 // Get random burst event interval (phase-based setting)
 function getRandomBurstEventInterval() {
+    // Prototype pacing: the first wave of a run comes early so every player sees one.
+    // lastBurstEventName is null at the start of a run and set once a wave fires.
+    if (!gameState.lastBurstEventName && typeof FIRST_BURST_DELAY !== 'undefined') {
+        return FIRST_BURST_DELAY.min + Math.random() * (FIRST_BURST_DELAY.max - FIRST_BURST_DELAY.min);
+    }
     const currentPhase = getCurrentPhase();
     const config = BURST_INTERVALS[currentPhase] || BURST_INTERVALS.phase1; // Fallback to phase1
     return config.min + Math.random() * (config.max - config.min);
@@ -2407,11 +2416,19 @@ function updatePlayer() {
     // Apply death animation time scale
     const timeScale = gameState.deathAnimation.active ? gameState.deathAnimation.timeScale : 1.0;
 
+    // Hold-to-accelerate: a tap is precise, a hold sweeps quickly.
+    if (player.rotatingLeft || player.rotatingRight) {
+        player.rotHold = Math.min((player.rotHold || 0) + 1, ROTATION_RAMP_FRAMES);
+    } else {
+        player.rotHold = 0;
+    }
+    const rotRamp = 1 + (ROTATION_RAMP_MAX - 1) * ((player.rotHold || 0) / ROTATION_RAMP_FRAMES);
+
     if (player.rotatingLeft) {
-        player.angle -= player.rotationSpeed * timeScale;
+        player.angle -= player.rotationSpeed * rotRamp * timeScale;
     }
     if (player.rotatingRight) {
-        player.angle += player.rotationSpeed * timeScale;
+        player.angle += player.rotationSpeed * rotRamp * timeScale;
     }
     // Update trail for player
     updateTrail(player);
