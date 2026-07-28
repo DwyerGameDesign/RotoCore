@@ -21,7 +21,7 @@ python3 -m http.server 8000
 
 | Search for | Replace with |
 |---|---|
-| `REPLACE_CATALOG` | your Playdate Catalog URL (5 places) |
+| `REPLACE_CATALOG` | your Playdate Catalog URL (5 in `index.html`, 1 in `play/index.html`) |
 | `REPLACE_ITCH` | your itch.io URL (4 places) |
 
 Not on Catalog yet? Point both at itch for now and swap one later.
@@ -60,7 +60,11 @@ Three additions to `play/index.html`. **No changes to `game.js`, `styles.css` or
 2. **The drawn console works.** Clicking the A and B buttons and the left/right
    d-pad fires the keys `game.js` already listens for (`x`, `z`, arrows). The
    A and B labels show their key. This also makes it playable on a phone.
-3. **It blends in when embedded** — the grey backdrop goes transparent inside the
+3. **A pulsing call to action on the game over screen** — "Get the full version on
+   Playdate", inverted white on black so it reads on the 1-bit screen, opening the
+   Catalog link in a new tab. It's the one place the prototype says it isn't the
+   whole game, and it lands after someone has played rather than before.
+4. **It blends in when embedded** — the grey backdrop goes transparent inside the
    iframe, and a "← Back to RotoCore" link appears only on the standalone page.
 
 - Direct link: `https://dwyergamedesign.github.io/RotoCore/play/`
