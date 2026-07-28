@@ -35,6 +35,26 @@
         .start-tip.is-gone{opacity:0;pointer-events:none}
         /* When embedded on the site, drop the grey backdrop so it sits on black. */
         html.is-embedded .playdate-console{background:transparent}
+
+        .proto-disclaimer{
+            margin:1rem 0 0;font-family:'Courier Prime','Courier New',monospace;
+            font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:#8f8f8f;
+        }
+        /* Shown on the standalone page only — when embedded, the parent site handles this. */
+        .taste{position:fixed;inset:0;z-index:120;display:none;align-items:center;justify-content:center;
+            padding:20px;background:rgba(0,0,0,.78)}
+        .taste.is-on{display:flex}
+        .taste__card{max-width:460px;background:#0a0a0a;border:2px solid #FFDE21;border-radius:12px;
+            padding:26px 26px 22px;font-family:'Courier Prime','Courier New',monospace;color:#e8e8e8}
+        .taste__lead{margin:0 0 12px;font-size:15px;font-weight:700;color:#fff;letter-spacing:.04em}
+        .taste__body{margin:0 0 20px;font-size:12.5px;line-height:1.75;color:#bdbdbd}
+        .taste__body b{color:#fff;font-weight:700}
+        .taste__row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+        .taste__go,.taste__no{font-family:inherit;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+            cursor:pointer;border-radius:4px;padding:10px 16px;text-decoration:none;display:inline-block}
+        .taste__go{background:#FFDE21;color:#000;font-weight:700;border:2px solid #FFDE21}
+        .taste__no{background:transparent;color:#9a9a9a;border:2px solid rgba(255,255,255,.25)}
+        .taste__no:hover{color:#fff}
     </style>
 </head>
 
@@ -174,6 +194,9 @@
                             <div class="game-over-instructions">
                                 <p class="game-over-instruction">Ⓐ CONTINUE</p>
                             </div>
+
+                            <!-- Added for the website -->
+                            <p class="proto-disclaimer">Prototype build &mdash; the Playdate version has the rest</p>
                         </div>
 
                         <!-- Pause Menu -->
@@ -295,6 +318,57 @@
             var lb = document.querySelector('.button-b-group .button-label');
             if (la) la.innerHTML = 'A<span class="key-chip">X</span>';
             if (lb) lb.innerHTML = 'B<span class="key-chip">Z</span>';
+
+            // First death of a session: tell the parent site, or (standalone) show the card.
+            (function () {
+                var over = document.getElementById('gameOver');
+                if (!over || !('MutationObserver' in window)) return;
+
+                var embedded = window.self !== window.top;
+                var announced = false;
+
+                function score() {
+                    var el = document.getElementById('finalScore');
+                    return el ? el.textContent.trim() : '';
+                }
+
+                function card(sc) {
+                    var wrap = document.createElement('div');
+                    wrap.className = 'taste is-on';
+                    wrap.innerHTML =
+                        '<div class="taste__card" role="dialog" aria-label="About this prototype">' +
+                          '<p class="taste__lead"></p>' +
+                          '<p class="taste__body">That was the prototype: the beam and the geometry. ' +
+                          'The Playdate version is the <b>decisions</b> &mdash; six mods to catch mid-run, ' +
+                          'three levels deep each, six glitches that punish a greedy shot, 50 wave patterns, ' +
+                          'two difficulty curves and a global leaderboard. Turned with a crank, not typed ' +
+                          'with arrow keys.</p>' +
+                          '<div class="taste__row">' +
+                            '<a class="taste__go" href="../">See the real thing &mdash; $3</a>' +
+                            '<button class="taste__no" type="button">Keep playing</button>' +
+                          '</div>' +
+                        '</div>';
+                    wrap.querySelector('.taste__lead').textContent =
+                        sc ? ('Core breached at ' + sc + '.') : 'Core breached.';
+                    wrap.querySelector('.taste__no').addEventListener('click', function () { wrap.remove(); });
+                    document.body.appendChild(wrap);
+                }
+
+                function fire() {
+                    if (announced) return;
+                    announced = true;
+                    var sc = score();
+                    if (embedded) {
+                        try { parent.postMessage({ type: 'rotocore:gameover', score: sc }, '*'); } catch (err) {}
+                    } else {
+                        card(sc);
+                    }
+                }
+
+                new MutationObserver(function () {
+                    if (!over.classList.contains('hidden')) fire();
+                }).observe(over, { attributes: true, attributeFilter: ['class'] });
+            })();
 
             // The menu says "Ⓐ PLAY" but never says which key that is. Say it.
             var console_ = document.querySelector('.playdate-console');
