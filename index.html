@@ -200,6 +200,21 @@ h2{
   font-family:var(--hud);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:#5a5a5a;
 }
 
+/* ---------- in the wild ----------
+   The photo is shown at its own aspect ratio — it's already cropped how it should be. */
+.wildband{display:grid;gap:2rem;align-items:center}
+@media(min-width:860px){.wildband{grid-template-columns:minmax(0,.9fr) minmax(0,1fr);gap:3.4rem}}
+.wild{
+  border-radius:10px;overflow:hidden;background:#0a0a0a;
+  border:2px solid rgba(255,255,255,.18);max-width:520px;
+}
+.wild img{display:block;width:100%;height:auto}
+.wild__cap{
+  margin:1.2rem 0 0;
+  font-family:var(--hud);font-size:.6rem;letter-spacing:.13em;text-transform:uppercase;
+  color:#6e6e6e;
+}
+
 /* ---------- press ---------- */
 .press{display:grid;gap:2.6rem}
 @media(min-width:880px){.press{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:3.5rem}}
@@ -492,6 +507,29 @@ kbd{
         <div class="shot" data-slot="assets/screens/03.gif"><img src="assets/screens/03.gif" alt="The game's hub menu — profile, global leaderboard, powerups and mods, glitches, enemy waves" loading="lazy" width="400" height="240"></div>
         <div class="shot" data-slot="assets/screens/04.gif"><img src="assets/screens/04.gif" alt="Gameplay: a swarm of pentagons converging while a powerup core drifts in" loading="lazy" width="400" height="240"></div>
       </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap"><hr class="rule"></div>
+
+  <!-- ============================ IN THE WILD ============================ -->
+  <section class="band" id="wild">
+    <div class="wrap wildband">
+      <figure class="rise" style="margin:0">
+        <div class="wild">
+          <img src="assets/in-the-wild.jpg" width="1100" height="1325" loading="lazy"
+               alt="RotoCore running on a yellow Playdate lying in grass among daisies">
+        </div>
+      </figure>
+      <div>
+        <p class="eyebrow rise">In the wild</p>
+        <h2 class="rise">Actual hardware. Actual grass.</h2>
+        <p class="lede rise" style="margin-bottom:0">
+          Someone took it outside on a sunny day and sent me the picture. There is no better
+          argument for a handheld than that.
+        </p>
+        <p class="wild__cap rise">Photographed by Matthew P. &mdash; thank you</p>
       </div>
     </div>
   </section>

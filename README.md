@@ -162,6 +162,7 @@ section.
 | `assets/icon.png` | the game icon, used as the favicon |
 | `assets/screens/*.gif` | your four gameplay captures, optimised |
 | `assets/stars.png` | your itch starfield, cropped and compressed into a tile |
+| `assets/in-the-wild.jpg` | Matthew P.'s photo, your crop, resized for web (1425 KB to 236 KB) |
 
 ## The starfield
 
