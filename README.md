@@ -1,4 +1,4 @@
-# RotoCore — website
+# RotoCore website
 
 Single-page site for RotoCore. No build step, no dependencies. Just static files.
 
@@ -35,19 +35,19 @@ Naming it `rotocore` gives a different, lowercase URL.
 
 ## The GIFs
 
-`assets/screens/01.gif` through `04.gif` — your four captures, run through
+`assets/screens/01.gif` through `04.gif` are your four captures, run through
 `gifsicle -O3` losslessly (2.8 MB down to 2.0 MB). They're native 400x240, rendered
 pixelated so they stay crisp when scaled up, and lazy-loaded so they don't download
 until someone scrolls near them.
 
-They display at native 400x240 and are never upscaled — the columns are capped at
+They display at native 400x240 and are never upscaled. The columns are capped at
 400px and centred, so on narrow screens they shrink but never stretch. To swap one,
 drop a replacement in with the same filename. If a file is ever missing, that tile falls back
 to a dashed placeholder rather than a broken image.
 
 ## The playable prototype
 
-Your browser prototype is the hero of the page — a click-to-load embed in the top
+Your browser prototype is the hero of the page: a click-to-load embed in the top
 right, so none of the ~200 KB of game code downloads until someone presses play.
 It also lives on its own at `play/` for direct linking.
 
@@ -55,22 +55,23 @@ Three additions to `play/index.html`. **No changes to `game.js`, `styles.css` or
 `configs/`.**
 
 1. **A start hint.** The menu screen says "Ⓐ PLAY", but a browser player has no
-   way to know Ⓐ means the `X` key — so it looks like the game is frozen on the
+   way to know Ⓐ means the `X` key, so it looks like the game is frozen on the
    title. A caption now reads *Press X to play*, and disappears once you do.
 2. **The drawn console works.** Clicking the A and B buttons and the left/right
    d-pad fires the keys `game.js` already listens for (`x`, `z`, arrows). The
    A and B labels show their key. This also makes it playable on a phone.
-3. **A pulsing call to action on the game over screen** — "Get the full version on
-   Playdate", inverted white on black so it reads on the 1-bit screen, opening the
+3. **A pulsing call to action on the game over screen.** It reads "Get the full
+   version on Playdate", inverted white on black so it reads on the 1-bit screen, opening the
    Catalog link in a new tab. It's the one place the prototype says it isn't the
    whole game, and it lands after someone has played rather than before.
-4. **It blends in when embedded** — the grey backdrop goes transparent inside the
+4. **It blends in when embedded.** The grey backdrop goes transparent inside the
    iframe, and a "← Back to RotoCore" link appears only on the standalone page.
 
 - Direct link: `https://dwyergamedesign.github.io/RotoCore/play/`
 - Controls: `X` start / Ⓐ, `Z` Ⓑ, ← → rotate, `,` `.` crank sim, `P` pause
 - The prototype saves high scores and upgrades to browser localStorage under
-  `rotocore*` keys — per-browser, harmless, but progress does persist between visits.
+  `rotocore*` keys. That's per-browser and harmless, but progress does persist
+  between visits.
 
 If you'd rather not feature an older build, delete `play/` and remove the
 `hero__demo` block in `index.html` plus the footer link to it.
@@ -99,12 +100,12 @@ place with their old values.
 | Constant | Was | Now | Why |
 |---|---|---|---|
 | `ROTATION_SPEED` | `0.06` | `0.105` | full sweep in ~2s instead of ~3.5s |
-| `ROTATION_RAMP_FRAMES` | — | `12` | 0.4s of holding to reach top speed |
-| `ROTATION_RAMP_MAX` | — | `1.6` | held sweep reaches ~1.25s per rotation |
+| `ROTATION_RAMP_FRAMES` | n/a | `12` | 0.4s of holding to reach top speed |
+| `ROTATION_RAMP_MAX` | n/a | `1.6` | held sweep reaches ~1.25s per rotation |
 
 Tapping still nudges precisely; only holding accelerates. The device build's own
-d-pad fallback is `0.06` (`playerConfig.lua`) — matching it exactly is what made this
-feel sluggish, since on hardware the d-pad is the backup and the crank is the game.
+d-pad fallback is `0.06` (`playerConfig.lua`), and matching it exactly is what made
+this feel sluggish, since on hardware the d-pad is the backup and the crank is the game.
 
 **`play/configs/enemies.js`**
 
@@ -115,8 +116,8 @@ feel sluggish, since on hardware the d-pad is the backup and the crank is the ga
 | Burst interval, all phases | flat 15-25s | 10-14s / 8-12s / 8-12s / 10-14s / 10-15s |
 | First wave of a run | 15-25s | **6-8s** |
 
-The old phase-1 spawn rate was exactly half the shipping game's — that alone made the
-opening thirty seconds feel empty. The flat burst timing was the other problem: with a
+The old phase-1 spawn rate was exactly half the shipping game's, and that alone made
+the opening thirty seconds feel empty. The flat burst timing was the other problem: with a
 first wave 15-25 seconds out, most people quit before seeing a single one.
 
 **Six waves ported from `enemyTypes.lua`,** unchanged apart from dropping the phase 6
@@ -127,13 +128,13 @@ To revert any of this, the old values are in the comments.
 
 ### Read this before you publish
 
-The site uses the same **anon key that's already inside your .pdx** — so it isn't a
+The site uses the same **anon key that's already inside your .pdx**, so it isn't a
 new secret, but a website makes it far easier to find. Anyone who opens devtools can
 copy it and call your API directly. Check your policies in the Supabase dashboard:
 
 - [ ] **RLS is enabled** on `scores`. If it's off, the anon key is full read/write.
 - [ ] `anon` has **SELECT**.
-- [ ] `anon` has **INSERT / UPDATE** — the game needs these to submit scores, which
+- [ ] `anon` has **INSERT / UPDATE**. The game needs these to submit scores, which
       also means a determined person can post a fake score. That's already true today.
 - [ ] `anon` has **no DELETE**. This is the one that matters most: it's the difference
       between someone adding a junk score and someone wiping the whole board.
@@ -141,7 +142,7 @@ copy it and call your API directly. Check your policies in the Supabase dashboar
       score can't sit permanently at the top.
 
 If you'd rather not expose the key at all, the zero-trust version is a Supabase Edge
-Function with JWT verification off that returns the top 10 — then the site calls a
+Function with JWT verification off that returns the top 10. The site then calls a
 plain public URL with no key. Worth doing if the board ever gets griefed; overkill
 until then.
 
@@ -171,7 +172,7 @@ section.
 
 Two things were done to it:
 
-- **Cropped 16px off every side.** The original has near-empty margins — the
+- **Cropped 16px off every side.** The original has near-empty margins, and the
   outermost 8px of the left and bottom have zero stars. Tiled raw, those margins
   line up into dark gutters every 1774px, a faint grid across the page. After the
   crop, edge density matches the interior (0.57-0.74% vs 0.60%).
@@ -183,7 +184,7 @@ still sky, which reads as depth and avoids the same star pattern sliding past
 repeatedly on a long page. To dial it back or up, change `opacity` in `.sky`.
 
 Panels that were solid black are now translucent so the stars carry through: the
-stats cells, the leaderboard, and the prototype's stage — the console now floats
+stats cells, the leaderboard, and the prototype's stage, so the console now floats
 directly on the starfield.
 
 ## Later, if you want a domain

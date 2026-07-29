@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>RotoCore — browser prototype</title>
+    <title>RotoCore browser prototype</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
@@ -12,14 +12,14 @@
     <link rel="icon" href="../assets/icon.png">
     <meta name="description" content="The original browser prototype of RotoCore, an arcade high-score chaser for Playdate.">
     <style>
-        /* Added for the website — shown only when this page is opened directly, not embedded. */
+        /* Added for the website. Shown only when this page is opened directly, not embedded. */
         .site-return{position:fixed;top:14px;left:16px;z-index:50;display:none;align-items:center;gap:.55rem;
             font-family:'Courier Prime','Courier New',monospace;font-size:11px;letter-spacing:.13em;
             text-transform:uppercase;color:#bdbdbd;text-decoration:none}
         .site-return:hover{color:#fff}
         .site-return__tag{background:#FFDE21;color:#000;font-weight:700;padding:2px 7px;border-radius:3px}
 
-        /* Added for the website — the console's own buttons are clickable, and the
+        /* Added for the website. The console's own buttons are clickable, and the
            A/B labels show which key they map to. No changes to game.js. */
         .console-button{cursor:pointer;transition:transform .06s ease, background-color .06s ease}
         .console-button.is-down{transform:translateY(1px);background-color:#b0b0b0}
@@ -262,7 +262,7 @@
         if (window.self === window.top) {
             document.getElementById('siteReturn').style.display = 'flex';
         }
-        // The game reads keys off document, so it needs focus — take it on any click.
+        // The game reads keys off document, so it needs focus. Take it on any click.
         document.addEventListener('pointerdown', function () { window.focus(); });
 
         // Blend into the site when embedded.
