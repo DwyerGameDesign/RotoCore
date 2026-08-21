@@ -300,10 +300,20 @@ kbd{
   line-height:1;color:var(--volt);font-variant-numeric:tabular-nums;letter-spacing:.04em;
 }
 .saga__now{
-  font-family:var(--hud);font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--ash);line-height:1.5;
+  display:flex;flex-direction:column;align-items:flex-end;gap:.12rem;
+  font-family:var(--hud);text-transform:uppercase;
+  color:var(--ash);text-align:right;max-width:min(100%,38rem);
 }
-.saga__now b{color:var(--bone);font-weight:700}
+.saga__now-label{
+  font-size:.64rem;letter-spacing:.12em;line-height:1.3;
+}
+.saga__now-title{
+  font-size:clamp(1.1rem,.95rem + .8vw,1.55rem);font-weight:800;
+  letter-spacing:.04em;line-height:1.15;color:var(--volt);
+}
+.saga__now-pct{
+  font-size:.72rem;letter-spacing:.1em;color:var(--bone);font-variant-numeric:tabular-nums;
+}
 .saga__msg{
   margin:0;padding:.4rem 1.2rem 1.1rem;
   font-family:var(--hud);font-size:.63rem;letter-spacing:.11em;line-height:1.7;color:#6e6e6e;
@@ -346,25 +356,26 @@ kbd{
 
 .saga__films{
   display:flex;width:100%;margin-top:.7rem;
-  min-height:18rem;align-items:flex-start;
+  min-height:24rem;align-items:flex-start;
 }
 .saga__film{
-  min-width:0;height:18rem;padding:0 .15rem 0 .35rem;
+  min-width:0;height:24rem;padding:0 .15rem 0 .35rem;
   border-left:1px solid rgba(255,255,255,.16);
   overflow:visible;
 }
 .saga__film:first-child{padding-left:0;border-left:0}
 .saga__film-year{
-  font-family:var(--hud);font-size:.5rem;letter-spacing:.08em;color:#5a5a5a;
-  display:block;margin:0 0 .4rem;
+  font-family:var(--hud);font-size:.58rem;letter-spacing:.08em;color:#5a5a5a;
+  display:block;margin:0 0 .45rem;
 }
 .saga__film-short{
-  font-family:var(--hud);font-weight:700;font-size:.58rem;letter-spacing:.08em;
+  font-family:var(--hud);font-weight:700;font-size:.8rem;letter-spacing:.06em;
   text-transform:uppercase;color:var(--ash);
   display:block;white-space:nowrap;line-height:1.15;
   writing-mode:vertical-rl;
   text-orientation:sideways;
   -webkit-text-orientation:sideways;
+  transform:rotate(180deg);
 }
 .saga__film.is-done .saga__film-short{color:var(--bone)}
 .saga__film.is-now .saga__film-short{color:var(--volt)}
@@ -461,7 +472,7 @@ kbd{
         <a class="btn btn--go" href="https://play.date/games/rotocore/">Playdate Catalog</a>
       </div>
       <p class="hero__meta">
-        Playdate &nbsp;·&nbsp; <b data-edit="price">$3</b> &nbsp;·&nbsp; <b data-edit="date">Out Now!!</b>
+        Playdate &nbsp;·&nbsp; <b data-edit="price">$3</b> &nbsp;·&nbsp; <b data-edit="date">Out Now!!!</b>
       </p>
       <img class="hero__badge" src="assets/play-on-playdate.png" alt="Play on Playdate">
     </div>
@@ -888,13 +899,19 @@ kbd{
     timeEl.textContent = formatPlay(totalMs);
 
     var filmPct = Math.round(loc.pct * 100);
-    var now = loc.film.title + ' \u00b7 ' + filmPct + '%';
-    if(loc.saga > 1) now = 'Saga ' + loc.saga + ' \u00b7 ' + now;
     nowEl.textContent = '';
-    nowEl.appendChild(document.createTextNode('Now '));
-    var b = document.createElement('b');
-    b.textContent = now;
-    nowEl.appendChild(b);
+    var label = document.createElement('span');
+    label.className = 'saga__now-label';
+    label.textContent = loc.saga > 1 ? 'Now watching \u00b7 Saga ' + loc.saga : 'Now watching';
+    var title = document.createElement('b');
+    title.className = 'saga__now-title';
+    title.textContent = loc.film.title;
+    var pct = document.createElement('span');
+    pct.className = 'saga__now-pct';
+    pct.textContent = filmPct + '%';
+    nowEl.appendChild(label);
+    nowEl.appendChild(title);
+    nowEl.appendChild(pct);
 
     msgEl.classList.add('is-hidden');
     lastPct = fillPct / 100;
