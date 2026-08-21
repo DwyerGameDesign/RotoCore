@@ -6,7 +6,7 @@
 
 <!-- ==========================================================================
      ROTOCORE. Catalog, $3, 18 Aug 2026, v1.3.8, contact, site URL, GIFs,
-     leaderboard. Asset paths are relative, so this works at
+     leaderboard, saga meter. Asset paths are relative, so this works at
      dwyergamedesign.github.io/RotoCore/ as-is.
      ========================================================================== -->
 
@@ -286,6 +286,94 @@ kbd{
   font-family:var(--hud);font-size:.6rem;line-height:1.7;letter-spacing:.08em;color:#5f5f5f;
 }
 
+/* ---------- saga meter ---------- */
+.saga{
+  border:2px solid rgba(255,255,255,.2);border-radius:12px;overflow:hidden;
+  background:rgba(0,0,0,.55);
+}
+.saga__status{
+  display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:.5rem 1.4rem;
+  padding:1.15rem 1.2rem .25rem;
+}
+.saga__time{
+  font-family:var(--hud);font-weight:800;font-size:clamp(1.05rem,.95rem + .5vw,1.35rem);
+  line-height:1;color:var(--volt);font-variant-numeric:tabular-nums;letter-spacing:.04em;
+}
+.saga__now{
+  font-family:var(--hud);font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ash);line-height:1.5;
+}
+.saga__now b{color:var(--bone);font-weight:700}
+.saga__msg{
+  margin:0;padding:.4rem 1.2rem 1.1rem;
+  font-family:var(--hud);font-size:.63rem;letter-spacing:.11em;line-height:1.7;color:#6e6e6e;
+}
+.saga__msg.is-hidden{display:none}
+
+.saga__scroll{
+  overflow-x:auto;-webkit-overflow-scrolling:touch;
+  padding:0 0 1.35rem;
+  overscroll-behavior-x:contain;
+  scrollbar-color:rgba(255,222,33,.45) transparent;
+}
+.saga__inner{min-width:1100px;padding:1.15rem 1.35rem 1.2rem}
+
+.saga__rail{
+  position:relative;height:10px;
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:999px;
+}
+.saga__fill{
+  position:absolute;left:0;top:0;bottom:0;width:0;
+  background:var(--volt);border-radius:999px 0 0 999px;
+  transition:width .55s ease;
+}
+.saga__fill.is-full{border-radius:999px}
+.saga__tick{
+  position:absolute;top:-4px;bottom:-4px;width:1px;
+  background:rgba(255,255,255,.35);pointer-events:none;
+}
+.saga__tick:first-child{display:none}
+.saga__head{
+  position:absolute;top:50%;left:0;z-index:2;
+  width:14px;height:14px;margin-left:-7px;
+  background:var(--volt);border:2px solid #000;
+  box-shadow:0 0 0 2px var(--volt);border-radius:50%;
+  transform:translateY(-50%);
+  transition:left .55s ease;
+}
+
+.saga__films{
+  display:flex;width:100%;margin-top:.7rem;
+  min-height:18rem;align-items:flex-start;
+}
+.saga__film{
+  min-width:0;height:18rem;padding:0 .15rem 0 .35rem;
+  border-left:1px solid rgba(255,255,255,.16);
+  overflow:visible;
+}
+.saga__film:first-child{padding-left:0;border-left:0}
+.saga__film-year{
+  font-family:var(--hud);font-size:.5rem;letter-spacing:.08em;color:#5a5a5a;
+  display:block;margin:0 0 .4rem;
+}
+.saga__film-short{
+  font-family:var(--hud);font-weight:700;font-size:.58rem;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ash);
+  display:block;white-space:nowrap;line-height:1.15;
+  writing-mode:vertical-rl;
+  text-orientation:sideways;
+  -webkit-text-orientation:sideways;
+}
+.saga__film.is-done .saga__film-short{color:var(--bone)}
+.saga__film.is-now .saga__film-short{color:var(--volt)}
+.saga__film.is-now .saga__film-year{color:var(--volt)}
+
+@media(prefers-reduced-motion:reduce){
+  .saga__fill,.saga__head{transition:none}
+}
+
 /* ---------- leaderboard ---------- */
 .board{border:2px solid rgba(255,255,255,.2);border-radius:12px;overflow:hidden;max-width:660px;background:rgba(0,0,0,.55)}
 .board__tabs{display:flex;align-items:stretch;border-bottom:2px solid rgba(255,255,255,.2)}
@@ -466,6 +554,35 @@ kbd{
     </div>
   </section>
 
+  <!-- ============================ SAGA METER ============================ -->
+  <section class="band" id="saga" style="padding-top:0">
+    <div class="wrap">
+      <p class="eyebrow rise">Community watch</p>
+      <h2 class="rise">How long have we defended the core.</h2>
+      <p class="lede rise">
+        Every second survived since launch, stacked against the movies in the order they
+        hit theaters.
+      </p>
+
+      <div class="saga rise">
+        <div class="saga__status">
+          <span class="saga__time" id="sagaTime">&#8212;</span>
+          <span class="saga__now" id="sagaNow">Loading community time&#8230;</span>
+        </div>
+        <p class="saga__msg is-hidden" id="sagaMsg"></p>
+        <div class="saga__scroll" id="sagaScroll">
+          <div class="saga__inner" id="sagaInner">
+            <div class="saga__rail" id="sagaRail" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Community watch through the Star Wars movies">
+              <div class="saga__fill" id="sagaFill"></div>
+              <div class="saga__head" id="sagaHead" aria-hidden="true"></div>
+            </div>
+            <div class="saga__films" id="sagaFilms"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ============================ LEADERBOARD ============================ -->
   <section class="band" id="scores" style="padding-top:0">
     <div class="wrap">
@@ -628,6 +745,260 @@ kbd{
 
   window.addEventListener('resize', fit);
 
+})();
+
+/* ---------------------------------------------------------------
+   Saga meter. Sums scores.total_time for players whose first score
+   row is on or after launch day, then walks the films in theatrical
+   release order, The Mandalorian & Grogu last.
+   --------------------------------------------------------------- */
+(function(){
+  var HOST = 'https://llkdjucqpwfemouwjpkd.supabase.co';
+  var KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxsa2RqdWNxcHdmZW1vdXdqcGtkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI0NzM4NDgsImV4cCI6MjA4ODA0OTg0OH0.UFy-96ACIDqhpuCEpKFm0R9SwgT3ipOYkeHlAuSJD_k';
+  var PAGE = 1000;
+  var LAUNCH_DAY = '2026-08-18';
+
+  var FILMS = [
+    { title: 'A New Hope',              year: 1977, min: 121 },
+    { title: 'The Empire Strikes Back', year: 1980, min: 124 },
+    { title: 'Return of the Jedi',      year: 1983, min: 131 },
+    { title: 'The Phantom Menace',      year: 1999, min: 136 },
+    { title: 'Attack of the Clones',    year: 2002, min: 142 },
+    { title: 'Revenge of the Sith',     year: 2005, min: 140 },
+    { title: 'The Force Awakens',       year: 2015, min: 138 },
+    { title: 'Rogue One',               year: 2016, min: 133 },
+    { title: 'The Last Jedi',           year: 2017, min: 152 },
+    { title: 'Solo',                    year: 2018, min: 135 },
+    { title: 'The Rise of Skywalker',   year: 2019, min: 142 },
+    { title: 'The Mandalorian & Grogu', year: 2026, min: 132 }
+  ];
+
+  var SAGA_MIN = 0;
+  FILMS.forEach(function(f){ SAGA_MIN += f.min; });
+
+  var rail   = document.getElementById('sagaRail');
+  var fill   = document.getElementById('sagaFill');
+  var head   = document.getElementById('sagaHead');
+  var filmsEl= document.getElementById('sagaFilms');
+  var timeEl = document.getElementById('sagaTime');
+  var nowEl  = document.getElementById('sagaNow');
+  var msgEl  = document.getElementById('sagaMsg');
+  var scroll = document.getElementById('sagaScroll');
+  if(!rail || !fill || !head || !filmsEl || !timeEl || !nowEl || !msgEl) return;
+
+  var filmNodes = [];
+
+  function apiHeaders(extra){
+    var h = { apikey: KEY, Authorization: 'Bearer ' + KEY, Accept: 'application/json' };
+    if(extra){ for(var k in extra) h[k] = extra[k]; }
+    return h;
+  }
+
+  function buildTrack(){
+    var acc = 0;
+    FILMS.forEach(function(film){
+      var tick = document.createElement('span');
+      tick.className = 'saga__tick';
+      tick.style.left = (acc / SAGA_MIN * 100) + '%';
+      tick.setAttribute('aria-hidden', 'true');
+      rail.insertBefore(tick, fill);
+
+      var cell = document.createElement('div');
+      cell.className = 'saga__film';
+      cell.style.flex = film.min + ' 0 0';
+      cell.title = film.title + ' (' + film.year + ') \u00b7 ' + film.min + ' min';
+
+      var short = document.createElement('span');
+      short.className = 'saga__film-short';
+      short.textContent = film.title;
+
+      var year = document.createElement('span');
+      year.className = 'saga__film-year';
+      year.textContent = String(film.year);
+
+      cell.appendChild(year);
+      cell.appendChild(short);
+      filmsEl.appendChild(cell);
+      filmNodes.push(cell);
+      acc += film.min;
+    });
+  }
+
+  function formatPlay(ms){
+    var sec = Math.max(0, Math.floor(Number(ms) / 1000));
+    var h = Math.floor(sec / 3600);
+    var m = Math.floor((sec % 3600) / 60);
+    if(h <= 0) return m + 'm';
+    if(m === 0) return h + 'h';
+    return h + 'h ' + m + 'm';
+  }
+
+  function locate(totalMin){
+    var cycles = Math.floor(totalMin / SAGA_MIN);
+    var rem = totalMin - cycles * SAGA_MIN;
+    var acc = 0;
+    for(var i = 0; i < FILMS.length; i++){
+      var film = FILMS[i];
+      var next = acc + film.min;
+      if(rem < next || i === FILMS.length - 1){
+        var into = Math.min(film.min, Math.max(0, rem - acc));
+        var pct = film.min > 0 ? into / film.min : 0;
+        return { film: film, index: i, into: into, pct: pct, saga: cycles + 1, rem: rem };
+      }
+      acc = next;
+    }
+  }
+
+  var lastPct = 0;
+
+  function centerHead(pct){
+    if(!scroll || !rail) return;
+    var viewW = scroll.clientWidth;
+    if(scroll.scrollWidth <= viewW + 2) return;
+    var sRect = scroll.getBoundingClientRect();
+    var rRect = rail.getBoundingClientRect();
+    var headInView = (rRect.left - sRect.left) + rRect.width * pct;
+    var target = scroll.scrollLeft + headInView - viewW / 2;
+    var max = scroll.scrollWidth - viewW;
+    if(target < 0) target = 0;
+    if(target > max) target = max;
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if('scrollTo' in scroll){
+      scroll.scrollTo({ left: target, behavior: reduce ? 'auto' : 'smooth' });
+    } else {
+      scroll.scrollLeft = target;
+    }
+  }
+
+  function render(totalMs){
+    var totalMin = Math.max(0, Number(totalMs) || 0) / 60000;
+    var loc = locate(totalMin);
+    var fillPct = (loc.rem / SAGA_MIN) * 100;
+    if(fillPct < 0) fillPct = 0;
+    if(fillPct > 100) fillPct = 100;
+
+    fill.style.width = fillPct + '%';
+    fill.classList.toggle('is-full', fillPct >= 99.5);
+    head.style.left = fillPct + '%';
+    rail.setAttribute('aria-valuenow', String(Math.round(fillPct)));
+    rail.setAttribute('aria-valuetext', loc.film.title + ', ' + Math.round(loc.pct * 100) + '% through');
+
+    filmNodes.forEach(function(node, i){
+      node.classList.toggle('is-done', i < loc.index);
+      node.classList.toggle('is-now', i === loc.index);
+    });
+
+    timeEl.textContent = formatPlay(totalMs);
+
+    var filmPct = Math.round(loc.pct * 100);
+    var now = loc.film.title + ' \u00b7 ' + filmPct + '%';
+    if(loc.saga > 1) now = 'Saga ' + loc.saga + ' \u00b7 ' + now;
+    nowEl.textContent = '';
+    nowEl.appendChild(document.createTextNode('Now '));
+    var b = document.createElement('b');
+    b.textContent = now;
+    nowEl.appendChild(b);
+
+    msgEl.classList.add('is-hidden');
+    lastPct = fillPct / 100;
+    requestAnimationFrame(function(){ centerHead(lastPct); });
+  }
+
+  function fail(err){
+    console.error('[RotoCore] saga fetch failed:', err);
+    timeEl.textContent = '\u2014';
+    nowEl.textContent = 'Can\u2019t reach community time right now.';
+    msgEl.textContent = 'The meter is still live in spirit. Try a refresh in a bit.';
+    msgEl.classList.remove('is-hidden');
+  }
+
+  function dayStamp(value){
+    if(!value) return '';
+    return String(value).slice(0, 10);
+  }
+
+  function startedOnOrAfterLaunch(day){
+    return day >= LAUNCH_DAY;
+  }
+
+  /* Group by device so a beta tester who later plays Gradual does not sneak
+     in. Prefer created_at (first insert). Fall back to last_played_date. */
+  function sumLaunchPlayers(rows){
+    var byDevice = {};
+    var i, row, id, day, bucket;
+    for(i = 0; i < rows.length; i++){
+      row = rows[i];
+      id = row.device_id || ('row-' + i);
+      day = dayStamp(row.created_at) || dayStamp(row.last_played_date);
+      bucket = byDevice[id];
+      if(!bucket){
+        byDevice[id] = { time: Number(row.total_time || 0), start: day };
+      } else {
+        bucket.time += Number(row.total_time || 0);
+        if(day && (!bucket.start || day < bucket.start)) bucket.start = day;
+      }
+    }
+    var n = 0;
+    for(id in byDevice){
+      if(Object.prototype.hasOwnProperty.call(byDevice, id) && startedOnOrAfterLaunch(byDevice[id].start)){
+        n += byDevice[id].time;
+      }
+    }
+    return n;
+  }
+
+  /* Aggregates are disabled on this project (PGRST123), so we page through
+     rows and filter client-side. Range is 0-based inclusive. */
+  var selectCols = 'total_time,device_id,created_at,last_played_date';
+
+  function fetchPaged(rows, from){
+    return fetch(HOST + '/rest/v1/scores?select=' + selectCols, {
+      headers: apiHeaders({ Range: from + '-' + (from + PAGE - 1) })
+    }).then(function(res){
+      if(!res.ok){
+        if(res.status === 400 && selectCols.indexOf('created_at') !== -1){
+          selectCols = 'total_time,device_id,last_played_date';
+          return fetchPaged([], 0);
+        }
+        if(res.status === 400 && selectCols.indexOf('device_id') !== -1){
+          selectCols = 'total_time,last_played_date';
+          return fetchPaged([], 0);
+        }
+        throw new Error('HTTP ' + res.status);
+      }
+      var contentRange = res.headers.get('Content-Range');
+      return res.json().then(function(page){
+        if(!Array.isArray(page)) throw new Error('Unexpected response');
+        rows = rows.concat(page);
+        if(page.length < PAGE) return sumLaunchPlayers(rows);
+        if(contentRange){
+          var total = contentRange.split('/')[1];
+          if(total && total !== '*' && from + page.length >= Number(total)) return sumLaunchPlayers(rows);
+        }
+        if(from >= PAGE * 19) return sumLaunchPlayers(rows);
+        return fetchPaged(rows, from + PAGE);
+      });
+    });
+  }
+
+  function load(){
+    fetchPaged([], 0).then(render).catch(fail);
+  }
+
+  buildTrack();
+  window.addEventListener('resize', function(){ centerHead(lastPct); });
+
+  var section = document.getElementById('saga');
+  if('IntersectionObserver' in window && section){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){ io.disconnect(); load(); }
+      });
+    }, {rootMargin:'200px'});
+    io.observe(section);
+  } else {
+    load();
+  }
 })();
 
 /* ---------------------------------------------------------------
