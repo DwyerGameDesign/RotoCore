@@ -17,17 +17,12 @@ python3 -m http.server 8000
 # open http://localhost:8000
 ```
 
-## One thing left to edit
+## Filled in
 
-| Search for | Replace with |
-|---|---|
-| `REPLACE_CATALOG` | your Playdate Catalog URL (5 in `index.html`, 1 in `play/index.html`) |
-| `REPLACE_ITCH` | your itch.io URL (4 places) |
-
-Not on Catalog yet? Point both at itch for now and swap one later.
-
-Already filled in: price ($3), release (18 August 2026), version (1.3.7), contact
-(dwyergamedesign@gmail.com), site URL, and the genre line.
+Catalog URL is [play.date/games/rotocore](https://play.date/games/rotocore/)
+(4 links in `index.html`, 1 in `play/index.html`). Also filled in: price ($3),
+release (18 August 2026), version (1.5.0), contact (dwyergamedesign@gmail.com),
+site URL, and the genre line.
 
 **Repo name matters.** GitHub Pages URLs are case-sensitive, so the repo must be
 named `RotoCore` exactly to match `https://dwyergamedesign.github.io/RotoCore/`.
@@ -84,9 +79,10 @@ The **Live scores** section reads the same Supabase table the game writes to:
 GET /rest/v1/scores?select=player_name,score&mode=eq.standard&order=score.desc&limit=10
 ```
 
-Standard and Gradual are tabs; each is fetched once and cached, and nothing is
-requested until you scroll the section into view. Names are rendered with
-`textContent`, never `innerHTML`, because they're arbitrary player-supplied strings.
+Classic (`standard`), Gradual (`gradual`), and Score Attack (`score_attack`) are
+tabs; each is fetched once and cached, and nothing is requested until you scroll
+the section into view. Names are rendered with `textContent`, never `innerHTML`,
+because they're arbitrary player-supplied strings.
 
 ## Prototype pacing (retuned)
 

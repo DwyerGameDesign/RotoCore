@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <!-- ==========================================================================
-     ROTOCORE. Catalog, $3, 18 Aug 2026, v1.3.8, contact, site URL, GIFs,
+     ROTOCORE. Catalog, $3, 18 Aug 2026, v1.5.0, contact, site URL, GIFs,
      leaderboard, saga meter. Asset paths are relative, so this works at
      dwyergamedesign.github.io/RotoCore/ as-is.
      ========================================================================== -->
@@ -389,10 +389,14 @@ kbd{
 .board{border:2px solid rgba(255,255,255,.2);border-radius:12px;overflow:hidden;max-width:660px;background:rgba(0,0,0,.55)}
 .board__tabs{display:flex;align-items:stretch;border-bottom:2px solid rgba(255,255,255,.2)}
 .board__tab{
-  flex:1;appearance:none;background:transparent;border:0;cursor:pointer;
-  padding:.95rem .6rem;color:var(--ash);
-  font-family:var(--hud);font-weight:700;font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;
+  flex:1 1 0;min-width:0;appearance:none;background:transparent;border:0;cursor:pointer;
+  padding:.95rem .4rem;color:var(--ash);
+  font-family:var(--hud);font-weight:700;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;
   border-right:2px solid rgba(255,255,255,.2);transition:color .12s ease,background .12s ease;
+  white-space:nowrap;
+}
+@media(max-width:520px){
+  .board__tab{font-size:.55rem;letter-spacing:.06em;padding:.85rem .28rem}
 }
 .board__tab:hover{color:var(--bone)}
 .board__tab.is-on{background:var(--volt);color:#000}
@@ -560,7 +564,7 @@ kbd{
       <div class="stat"><span class="stat__n">50</span><span class="stat__l">Enemy wave patterns</span></div>
       <div class="stat"><span class="stat__n">30</span><span class="stat__l">Mods &amp; powerups</span></div>
       <div class="stat"><span class="stat__n">6</span><span class="stat__l">Glitches to avoid</span></div>
-      <div class="stat"><span class="stat__n">2</span><span class="stat__l">Difficulty modes</span></div>
+      <div class="stat"><span class="stat__n">3</span><span class="stat__l">Difficulty modes</span></div>
       <div class="stat"><span class="stat__n">∞</span><span class="stat__l">Global leaderboard</span></div>
     </div>
   </section>
@@ -606,6 +610,7 @@ kbd{
         <div class="board__tabs" role="tablist" aria-label="Leaderboard difficulty">
           <button class="board__tab is-on" type="button" role="tab" aria-selected="true" data-mode="standard">Classic</button>
           <button class="board__tab" type="button" role="tab" aria-selected="false" data-mode="gradual">Gradual</button>
+          <button class="board__tab" type="button" role="tab" aria-selected="false" data-mode="score_attack">Score Attack</button>
           <button class="board__refresh" type="button" id="boardRefresh">Refresh</button>
         </div>
         <ol class="board__list" id="boardList"></ol>
@@ -681,7 +686,7 @@ kbd{
         <dt>Genre</dt><dd>Arcade high-score chaser with roguelite upgrades</dd>
         <dt>Price</dt><dd data-edit="price">$3 USD</dd>
         <dt>Released</dt><dd data-edit="date">August 18 2026</dd>
-        <dt>Version</dt><dd>1.3.9</dd>
+        <dt>Version</dt><dd>1.5.0</dd>
         <dt>Notes</dt><dd>Online leaderboards need Playdate OS 2.7 or later</dd>
         <dt>Contact</dt><dd><a href="mailto:dwyergamedesign@gmail.com">dwyergamedesign@gmail.com</a></dd>
         <dt>Website</dt><dd><a href="https://dwyergamedesign.github.io/RotoCore/">dwyergamedesign.github.io/RotoCore</a></dd>
