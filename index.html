@@ -6,7 +6,7 @@
 
 <!-- ==========================================================================
      ROTOCORE. Catalog, $3, 18 Aug 2026, v1.5.0, contact, site URL, GIFs,
-     leaderboard, saga meter. Asset paths are relative, so this works at
+     leaderboard, timed events. Asset paths are relative, so this works at
      dwyergamedesign.github.io/RotoCore/ as-is.
      ========================================================================== -->
 
@@ -286,103 +286,118 @@ kbd{
   font-family:var(--hud);font-size:.6rem;line-height:1.7;letter-spacing:.08em;color:#5f5f5f;
 }
 
-/* ---------- saga meter ---------- */
-.saga{
+/* ---------- timed event ---------- */
+.event{
   border:2px solid rgba(255,255,255,.2);border-radius:12px;overflow:hidden;
-  background:rgba(0,0,0,.55);
+  background:rgba(0,0,0,.55);max-width:720px;
 }
-.saga__status{
-  display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:.5rem 1.4rem;
-  padding:1.15rem 1.2rem .25rem;
+.event__top{
+  display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:.7rem 1.4rem;
+  padding:1.2rem 1.25rem .2rem;
 }
-.saga__time{
+.event__badge{
+  display:inline-block;
+  font-family:var(--hud);font-weight:800;font-size:.62rem;letter-spacing:.16em;
+  text-transform:uppercase;padding:.28rem .55rem;
+  background:var(--volt);color:#000;border-radius:3px;
+}
+.event.is-upcoming .event__badge{
+  background:transparent;color:var(--volt);border:1px solid var(--volt);
+}
+.event.is-idle .event__badge,
+.event.is-error .event__badge{
+  background:transparent;color:var(--ash);border:1px solid rgba(255,255,255,.22);
+}
+.event.is-live .event__badge{animation:eventPulse 1.8s ease-in-out infinite}
+@keyframes eventPulse{
+  0%,100%{opacity:1}
+  50%{opacity:.55}
+}
+.event__time{
   font-family:var(--hud);font-weight:800;font-size:clamp(1.05rem,.95rem + .5vw,1.35rem);
   line-height:1;color:var(--volt);font-variant-numeric:tabular-nums;letter-spacing:.04em;
+  text-transform:uppercase;
 }
-.saga__now{
-  display:flex;flex-direction:column;align-items:flex-end;gap:.12rem;
-  font-family:var(--hud);text-transform:uppercase;
-  color:var(--ash);text-align:right;max-width:min(100%,38rem);
+.event__time:empty{display:none}
+.event__name{
+  font-family:var(--hud);font-weight:800;font-size:clamp(1.1rem,.95rem + .7vw,1.55rem);
+  letter-spacing:.04em;text-transform:uppercase;margin:.55rem 1.25rem 0;line-height:1.15;
 }
-.saga__now-label{
-  font-size:.64rem;letter-spacing:.12em;line-height:1.3;
+.event__rule{
+  margin:.35rem 1.25rem 0;
+  font-family:var(--hud);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ash);
 }
-.saga__now-title{
-  font-size:clamp(1.1rem,.95rem + .8vw,1.55rem);font-weight:800;
-  letter-spacing:.04em;line-height:1.15;color:var(--volt);
+.event__rule:empty,.event__desc:empty,.event__rewards:empty{display:none}
+.event__desc{
+  margin:.7rem 1.25rem 0;color:#cfcfcf;max-width:52ch;
 }
-.saga__now-pct{
-  font-size:.72rem;letter-spacing:.1em;color:var(--bone);font-variant-numeric:tabular-nums;
-}
-.saga__msg{
-  margin:0;padding:.4rem 1.2rem 1.1rem;
-  font-family:var(--hud);font-size:.63rem;letter-spacing:.11em;line-height:1.7;color:#6e6e6e;
-}
-.saga__msg.is-hidden{display:none}
-
-.saga__scroll{
-  overflow-x:auto;-webkit-overflow-scrolling:touch;
-  padding:0 0 1.35rem;
-  overscroll-behavior-x:contain;
-  scrollbar-color:rgba(255,222,33,.45) transparent;
-}
-.saga__inner{min-width:1100px;padding:1.15rem 1.35rem 1.2rem}
-
-.saga__rail{
+.event__meter{padding:1.15rem 1.25rem .2rem}
+.event__rail{
   position:relative;height:10px;
   background:rgba(255,255,255,.12);
   border:1px solid rgba(255,255,255,.18);
   border-radius:999px;
 }
-.saga__fill{
+.event__fill{
   position:absolute;left:0;top:0;bottom:0;width:0;
   background:var(--volt);border-radius:999px 0 0 999px;
-  transition:width .55s ease;
+  transition:width .4s ease;
 }
-.saga__fill.is-full{border-radius:999px}
-.saga__tick{
-  position:absolute;top:-4px;bottom:-4px;width:1px;
-  background:rgba(255,255,255,.35);pointer-events:none;
-}
-.saga__tick:first-child{display:none}
-.saga__head{
+.event__fill.is-full{border-radius:999px}
+.event__knob{
   position:absolute;top:50%;left:0;z-index:2;
   width:14px;height:14px;margin-left:-7px;
   background:var(--volt);border:2px solid #000;
   box-shadow:0 0 0 2px var(--volt);border-radius:50%;
   transform:translateY(-50%);
-  transition:left .55s ease;
+  transition:left .4s ease;
 }
-
-.saga__films{
-  display:flex;width:100%;margin-top:.7rem;
-  min-height:24rem;align-items:flex-start;
+.event__marks{
+  display:flex;justify-content:space-between;gap:1rem;
+  margin:.65rem 0 0;
+  font-family:var(--hud);font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:#6e6e6e;
 }
-.saga__film{
-  min-width:0;height:24rem;padding:0 .15rem 0 .35rem;
-  border-left:1px solid rgba(255,255,255,.16);
-  overflow:visible;
+.event__rewards{
+  margin:0;padding:.55rem 1.25rem 1.05rem;
+  font-family:var(--hud);font-size:.62rem;letter-spacing:.1em;line-height:1.7;text-transform:uppercase;color:var(--ash);
 }
-.saga__film:first-child{padding-left:0;border-left:0}
-.saga__film-year{
-  font-family:var(--hud);font-size:.58rem;letter-spacing:.08em;color:#5a5a5a;
-  display:block;margin:0 0 .45rem;
+.event__board{list-style:none;margin:0;padding:0;border-top:1px solid rgba(255,255,255,.12)}
+.event__row{
+  display:grid;grid-template-columns:2.6rem minmax(0,1fr) auto;align-items:center;gap:1rem;
+  padding:.7rem 1.15rem;border-bottom:1px solid rgba(255,255,255,.1);
 }
-.saga__film-short{
-  font-family:var(--hud);font-weight:700;font-size:.8rem;letter-spacing:.06em;
-  text-transform:uppercase;color:var(--ash);
-  display:block;white-space:nowrap;line-height:1.15;
-  writing-mode:vertical-rl;
-  text-orientation:sideways;
-  -webkit-text-orientation:sideways;
-  transform:rotate(180deg);
+.event__board li:last-child .event__row{border-bottom:0}
+.event__rank{
+  font-family:var(--hud);font-weight:800;font-size:.74rem;color:#5f5f5f;font-variant-numeric:tabular-nums;
 }
-.saga__film.is-done .saga__film-short{color:var(--bone)}
-.saga__film.is-now .saga__film-short{color:var(--volt)}
-.saga__film.is-now .saga__film-year{color:var(--volt)}
+.event__player{
+  font-family:var(--hud);font-size:.78rem;letter-spacing:.04em;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.event__score{
+  font-family:var(--hud);font-weight:800;font-size:.85rem;font-variant-numeric:tabular-nums;
+}
+.event__board li:first-child .event__rank,
+.event__board li:first-child .event__score{color:var(--volt)}
+.event__msg{
+  margin:0;padding:1.1rem 1.25rem 1.3rem;
+  font-family:var(--hud);font-size:.63rem;letter-spacing:.11em;line-height:1.7;color:#6e6e6e;
+}
+.event__msg.is-hidden{display:none}
+.event.is-idle .event__meter,
+.event.is-idle .event__rewards,
+.event.is-idle .event__board,
+.event.is-error .event__meter,
+.event.is-error .event__rewards,
+.event.is-error .event__board,
+.event.is-loading .event__meter,
+.event.is-loading .event__rewards,
+.event.is-loading .event__board,
+.event.is-upcoming .event__board{display:none}
 
 @media(prefers-reduced-motion:reduce){
-  .saga__fill,.saga__head{transition:none}
+  .event__fill,.event__knob{transition:none}
+  .event.is-live .event__badge{animation:none}
 }
 
 /* ---------- leaderboard ---------- */
@@ -454,6 +469,7 @@ kbd{
     <img class="topbar__mark" src="assets/logo.png" alt="RotoCore">
     <nav class="topnav">
       <a class="topnav__link" href="#loop">The core</a>
+      <a class="topnav__link" href="#event">Events</a>
       <a class="topnav__link" href="#look">Look</a>
       <a class="topnav__link" href="#press">Press</a>
       <a class="btn btn--sm btn--go" href="https://play.date/games/rotocore/">Get it</a>
@@ -569,30 +585,36 @@ kbd{
     </div>
   </section>
 
-  <!-- ============================ SAGA METER ============================ -->
-  <section class="band" id="saga" style="padding-top:0">
+  <!-- ============================ TIMED EVENT ============================ -->
+  <section class="band" id="event" style="padding-top:0">
     <div class="wrap">
-      <p class="eyebrow rise">Community watch</p>
-      <h2 class="rise">How long have we defended the core.</h2>
+      <p class="eyebrow rise">Timed event</p>
+      <h2 class="rise">Compete for Glory</h2>
       <p class="lede rise">
-        Every second survived since launch, stacked against the Star Wars movies running time.
+        Live Events where first place takes the trophy.
       </p>
 
-      <div class="saga rise">
-        <div class="saga__status">
-          <span class="saga__time" id="sagaTime">&#8212;</span>
-          <span class="saga__now" id="sagaNow">Loading community time&#8230;</span>
+      <div class="event rise is-loading" id="eventCard">
+        <div class="event__top">
+          <span class="event__badge" id="eventBadge">Loading</span>
+          <span class="event__time" id="eventTime"></span>
         </div>
-        <p class="saga__msg is-hidden" id="sagaMsg"></p>
-        <div class="saga__scroll" id="sagaScroll">
-          <div class="saga__inner" id="sagaInner">
-            <div class="saga__rail" id="sagaRail" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Community watch through the Star Wars movies">
-              <div class="saga__fill" id="sagaFill"></div>
-              <div class="saga__head" id="sagaHead" aria-hidden="true"></div>
-            </div>
-            <div class="saga__films" id="sagaFilms"></div>
+        <h3 class="event__name" id="eventName">Checking for an event&#8230;</h3>
+        <p class="event__rule" id="eventRule"></p>
+        <p class="event__desc" id="eventDesc"></p>
+        <div class="event__meter" id="eventMeter">
+          <div class="event__rail" id="eventRail" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Event progress">
+            <div class="event__fill" id="eventFill"></div>
+            <div class="event__knob" id="eventKnob" aria-hidden="true"></div>
+          </div>
+          <div class="event__marks">
+            <span id="eventStartLabel">Start</span>
+            <span id="eventEndLabel">End</span>
           </div>
         </div>
+        <p class="event__rewards" id="eventRewards"></p>
+        <ol class="event__board" id="eventBoard"></ol>
+        <p class="event__msg" id="eventMsg">Loading the event&#8230;</p>
       </div>
     </div>
   </section>
@@ -761,45 +783,36 @@ kbd{
 })();
 
 /* ---------------------------------------------------------------
-   Saga meter. Sums scores.total_time for players whose first score
-   row is on or after launch day, then walks the films in theatrical
-   release order, The Mandalorian & Grogu last.
+   Timed event. Reads the same active_event view the game boots from.
+   Empty array = nothing current or upcoming. One row = live if it
+   has started, otherwise the next one. Refetch on load and every
+   minute so the countdown stays honest. Anon key only.
    --------------------------------------------------------------- */
 (function(){
   var HOST = 'https://llkdjucqpwfemouwjpkd.supabase.co';
   var KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxsa2RqdWNxcHdmZW1vdXdqcGtkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI0NzM4NDgsImV4cCI6MjA4ODA0OTg0OH0.UFy-96ACIDqhpuCEpKFm0R9SwgT3ipOYkeHlAuSJD_k';
-  var PAGE = 1000;
-  var LAUNCH_DAY = '2026-08-18';
+  var REFRESH_MS = 60000;
+  var TICK_MS = 1000;
 
-  var FILMS = [
-    { title: 'A New Hope',              year: 1977, min: 121 },
-    { title: 'The Empire Strikes Back', year: 1980, min: 124 },
-    { title: 'Return of the Jedi',      year: 1983, min: 131 },
-    { title: 'The Phantom Menace',      year: 1999, min: 136 },
-    { title: 'Attack of the Clones',    year: 2002, min: 142 },
-    { title: 'Revenge of the Sith',     year: 2005, min: 140 },
-    { title: 'The Force Awakens',       year: 2015, min: 138 },
-    { title: 'Rogue One',               year: 2016, min: 133 },
-    { title: 'The Last Jedi',           year: 2017, min: 152 },
-    { title: 'Solo',                    year: 2018, min: 135 },
-    { title: 'The Rise of Skywalker',   year: 2019, min: 142 },
-    { title: 'The Mandalorian & Grogu', year: 2026, min: 132 }
-  ];
+  var card = document.getElementById('eventCard');
+  var badge = document.getElementById('eventBadge');
+  var timeEl = document.getElementById('eventTime');
+  var nameEl = document.getElementById('eventName');
+  var ruleEl = document.getElementById('eventRule');
+  var descEl = document.getElementById('eventDesc');
+  var rail = document.getElementById('eventRail');
+  var fill = document.getElementById('eventFill');
+  var knob = document.getElementById('eventKnob');
+  var startLabel = document.getElementById('eventStartLabel');
+  var endLabel = document.getElementById('eventEndLabel');
+  var rewardsEl = document.getElementById('eventRewards');
+  var boardEl = document.getElementById('eventBoard');
+  var msgEl = document.getElementById('eventMsg');
+  if(!card || !badge || !timeEl || !nameEl || !ruleEl || !descEl || !rail || !fill || !knob || !rewardsEl || !boardEl || !msgEl) return;
 
-  var SAGA_MIN = 0;
-  FILMS.forEach(function(f){ SAGA_MIN += f.min; });
-
-  var rail   = document.getElementById('sagaRail');
-  var fill   = document.getElementById('sagaFill');
-  var head   = document.getElementById('sagaHead');
-  var filmsEl= document.getElementById('sagaFilms');
-  var timeEl = document.getElementById('sagaTime');
-  var nowEl  = document.getElementById('sagaNow');
-  var msgEl  = document.getElementById('sagaMsg');
-  var scroll = document.getElementById('sagaScroll');
-  if(!rail || !fill || !head || !filmsEl || !timeEl || !nowEl || !msgEl) return;
-
-  var filmNodes = [];
+  var current = null;
+  var lastState = '';
+  var tickTimer = null;
 
   function apiHeaders(extra){
     var h = { apikey: KEY, Authorization: 'Bearer ' + KEY, Accept: 'application/json' };
@@ -807,217 +820,268 @@ kbd{
     return h;
   }
 
-  function buildTrack(){
-    var acc = 0;
-    FILMS.forEach(function(film){
-      var tick = document.createElement('span');
-      tick.className = 'saga__tick';
-      tick.style.left = (acc / SAGA_MIN * 100) + '%';
-      tick.setAttribute('aria-hidden', 'true');
-      rail.insertBefore(tick, fill);
-
-      var cell = document.createElement('div');
-      cell.className = 'saga__film';
-      cell.style.flex = film.min + ' 0 0';
-      cell.title = film.title + ' (' + film.year + ') \u00b7 ' + film.min + ' min';
-
-      var short = document.createElement('span');
-      short.className = 'saga__film-short';
-      short.textContent = film.title;
-
-      var year = document.createElement('span');
-      year.className = 'saga__film-year';
-      year.textContent = String(film.year);
-
-      cell.appendChild(year);
-      cell.appendChild(short);
-      filmsEl.appendChild(cell);
-      filmNodes.push(cell);
-      acc += film.min;
-    });
+  function parseTime(iso){
+    if(!iso) return null;
+    var t = Date.parse(iso);
+    return isNaN(t) ? null : t;
   }
 
-  function formatPlay(ms){
-    var sec = Math.max(0, Math.floor(Number(ms) / 1000));
-    var h = Math.floor(sec / 3600);
-    var m = Math.floor((sec % 3600) / 60);
-    if(h <= 0) return m + 'm';
-    if(m === 0) return h + 'h';
-    return h + 'h ' + m + 'm';
+  function classify(ev, now){
+    if(!ev) return 'idle';
+    var start = parseTime(ev.starts_at);
+    var end = parseTime(ev.ends_at);
+    if(!start || !end) return 'idle';
+    if(now < start) return 'upcoming';
+    if(now < end) return 'live';
+    return 'idle';
   }
 
-  function locate(totalMin){
-    var cycles = Math.floor(totalMin / SAGA_MIN);
-    var rem = totalMin - cycles * SAGA_MIN;
-    var acc = 0;
-    for(var i = 0; i < FILMS.length; i++){
-      var film = FILMS[i];
-      var next = acc + film.min;
-      if(rem < next || i === FILMS.length - 1){
-        var into = Math.min(film.min, Math.max(0, rem - acc));
-        var pct = film.min > 0 ? into / film.min : 0;
-        return { film: film, index: i, into: into, pct: pct, saga: cycles + 1, rem: rem };
-      }
-      acc = next;
-    }
-  }
-
-  var lastPct = 0;
-
-  function centerHead(pct){
-    if(!scroll || !rail) return;
-    var viewW = scroll.clientWidth;
-    if(scroll.scrollWidth <= viewW + 2) return;
-    var sRect = scroll.getBoundingClientRect();
-    var rRect = rail.getBoundingClientRect();
-    var headInView = (rRect.left - sRect.left) + rRect.width * pct;
-    var target = scroll.scrollLeft + headInView - viewW / 2;
-    var max = scroll.scrollWidth - viewW;
-    if(target < 0) target = 0;
-    if(target > max) target = max;
-    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if('scrollTo' in scroll){
-      scroll.scrollTo({ left: target, behavior: reduce ? 'auto' : 'smooth' });
+  function formatCountdown(ms, upcoming){
+    var sec = Math.max(0, Math.floor(ms / 1000));
+    var body;
+    if(sec >= 86400){
+      body = Math.floor(sec / 86400) + 'D ' + Math.floor((sec % 86400) / 3600) + 'H';
+    } else if(sec >= 3600){
+      body = Math.floor(sec / 3600) + 'H ' + Math.floor((sec % 3600) / 60) + 'M';
+    } else if(sec >= 60){
+      body = Math.floor(sec / 60) + 'M ' + (sec % 60) + 'S';
     } else {
-      scroll.scrollLeft = target;
+      body = sec + 'S';
+    }
+    return upcoming ? ('Starts in ' + body) : (body + ' left');
+  }
+
+  function formatWhen(ms){
+    try {
+      return new Date(ms).toLocaleString(undefined, {
+        weekday: 'short', month: 'short', day: 'numeric',
+        hour: 'numeric', minute: '2-digit'
+      });
+    } catch(err){
+      return '';
     }
   }
 
-  function render(totalMs){
-    var totalMin = Math.max(0, Number(totalMs) || 0) / 60000;
-    var loc = locate(totalMin);
-    var fillPct = (loc.rem / SAGA_MIN) * 100;
-    if(fillPct < 0) fillPct = 0;
-    if(fillPct > 100) fillPct = 100;
+  function rewardsLine(ev){
+    var topN = Number(ev.top_n) || 5;
+    var through = ev.award_through == null || ev.award_through === '' ? null : Number(ev.award_through);
+    if(through && through > topN) return 'Rewards for top ' + topN + ' and top ' + through + '. Winner takes the trophy.';
+    if(through) return 'Rewards for top ' + topN + '. Winner takes the trophy.';
+    return 'Rewards for top ' + topN + ' and every entrant. Winner takes the trophy.';
+  }
 
-    fill.style.width = fillPct + '%';
-    fill.classList.toggle('is-full', fillPct >= 99.5);
-    head.style.left = fillPct + '%';
-    rail.setAttribute('aria-valuenow', String(Math.round(fillPct)));
-    rail.setAttribute('aria-valuetext', loc.film.title + ', ' + Math.round(loc.pct * 100) + '% through');
+  function setMode(mode){
+    card.classList.remove('is-loading', 'is-idle', 'is-upcoming', 'is-live', 'is-error');
+    card.classList.add('is-' + mode);
+  }
 
-    filmNodes.forEach(function(node, i){
-      node.classList.toggle('is-done', i < loc.index);
-      node.classList.toggle('is-now', i === loc.index);
+  function say(text, show){
+    if(!text){
+      msgEl.textContent = '';
+      msgEl.classList.add('is-hidden');
+      return;
+    }
+    msgEl.textContent = text;
+    if(show) msgEl.classList.remove('is-hidden');
+    else msgEl.classList.add('is-hidden');
+  }
+
+  function setFill(pct, label){
+    if(pct < 0) pct = 0;
+    if(pct > 100) pct = 100;
+    fill.style.width = pct + '%';
+    fill.classList.toggle('is-full', pct >= 99.5);
+    knob.style.left = pct + '%';
+    rail.setAttribute('aria-valuenow', String(Math.round(pct)));
+    if(label) rail.setAttribute('aria-valuetext', label);
+  }
+
+  function asRows(raw){
+    if(typeof raw === 'string'){
+      try { raw = JSON.parse(raw); } catch(err){ return []; }
+    }
+    return Array.isArray(raw) ? raw : [];
+  }
+
+  function renderBoard(rows){
+    boardEl.innerHTML = '';
+    if(!rows || !rows.length) return;
+    rows.forEach(function(row, i){
+      var li = document.createElement('li');
+      var wrap = document.createElement('div');
+      wrap.className = 'event__row';
+
+      var rankN = Number(row.ord || row.rank || (i + 1));
+      var rank = document.createElement('span');
+      rank.className = 'event__rank';
+      rank.textContent = (rankN < 10 ? '0' : '') + rankN;
+
+      var name = document.createElement('span');
+      name.className = 'event__player';
+      name.textContent = row.player_name || row.playerName || '???';
+
+      var score = document.createElement('span');
+      score.className = 'event__score';
+      score.textContent = Number(row.score || 0).toLocaleString('en-US');
+
+      wrap.appendChild(rank);
+      wrap.appendChild(name);
+      wrap.appendChild(score);
+      li.appendChild(wrap);
+      boardEl.appendChild(li);
     });
-
-    timeEl.textContent = formatPlay(totalMs);
-
-    var filmPct = Math.round(loc.pct * 100);
-    nowEl.textContent = '';
-    var label = document.createElement('span');
-    label.className = 'saga__now-label';
-    label.textContent = loc.saga > 1 ? 'Now watching \u00b7 Saga ' + loc.saga : 'Now watching';
-    var title = document.createElement('b');
-    title.className = 'saga__now-title';
-    title.textContent = loc.film.title;
-    var pct = document.createElement('span');
-    pct.className = 'saga__now-pct';
-    pct.textContent = filmPct + '%';
-    nowEl.appendChild(label);
-    nowEl.appendChild(title);
-    nowEl.appendChild(pct);
-
-    msgEl.classList.add('is-hidden');
-    lastPct = fillPct / 100;
-    requestAnimationFrame(function(){ centerHead(lastPct); });
   }
 
-  function fail(err){
-    console.error('[RotoCore] saga fetch failed:', err);
-    timeEl.textContent = '\u2014';
-    nowEl.textContent = 'Can\u2019t reach community time right now.';
-    msgEl.textContent = 'The meter is still live in spirit. Try a refresh in a bit.';
-    msgEl.classList.remove('is-hidden');
+  function paintIdle(kind, message){
+    current = null;
+    lastState = kind;
+    stopTick();
+    setMode(kind);
+    badge.textContent = kind === 'error' ? 'Offline' : 'Idle';
+    timeEl.textContent = '';
+    nameEl.textContent = kind === 'error' ? 'Can\u2019t reach events right now' : 'No event right now';
+    ruleEl.textContent = '';
+    descEl.textContent = '';
+    rewardsEl.textContent = '';
+    boardEl.innerHTML = '';
+    setFill(0, 'No event');
+    say(message, true);
   }
 
-  function dayStamp(value){
-    if(!value) return '';
-    return String(value).slice(0, 10);
-  }
-
-  function startedOnOrAfterLaunch(day){
-    return day >= LAUNCH_DAY;
-  }
-
-  /* Group by device so a beta tester who later plays Gradual does not sneak
-     in. Prefer created_at (first insert). Fall back to last_played_date. */
-  function sumLaunchPlayers(rows){
-    var byDevice = {};
-    var i, row, id, day, bucket;
-    for(i = 0; i < rows.length; i++){
-      row = rows[i];
-      id = row.device_id || ('row-' + i);
-      day = dayStamp(row.created_at) || dayStamp(row.last_played_date);
-      bucket = byDevice[id];
-      if(!bucket){
-        byDevice[id] = { time: Number(row.total_time || 0), start: day };
-      } else {
-        bucket.time += Number(row.total_time || 0);
-        if(day && (!bucket.start || day < bucket.start)) bucket.start = day;
-      }
+  function paintEvent(ev){
+    if(!current || current.event_id !== ev.event_id){
+      boardEl.innerHTML = '';
     }
-    var n = 0;
-    for(id in byDevice){
-      if(Object.prototype.hasOwnProperty.call(byDevice, id) && startedOnOrAfterLaunch(byDevice[id].start)){
-        n += byDevice[id].time;
-      }
+    current = ev;
+    var now = Date.now();
+    var state = classify(ev, now);
+    if(state === 'idle'){
+      paintIdle('idle', 'Nothing current or upcoming. Check back when the next window opens.');
+      return;
     }
-    return n;
+
+    var start = parseTime(ev.starts_at);
+    var end = parseTime(ev.ends_at);
+    var upcoming = state === 'upcoming';
+    var remaining = upcoming ? (start - now) : (end - now);
+    var pct = 0;
+    if(!upcoming && end > start){
+      pct = ((now - start) / (end - start)) * 100;
+    }
+
+    lastState = state;
+    setMode(state);
+    badge.textContent = upcoming ? 'Coming soon' : 'Live now';
+    timeEl.textContent = formatCountdown(remaining, upcoming);
+    nameEl.textContent = ev.name || 'Event';
+    ruleEl.textContent = ev.rule_label || ev.scoring_label || ev.subtitle || '';
+    descEl.textContent = ev.description || '';
+    rewardsEl.textContent = rewardsLine(ev);
+    if(startLabel) startLabel.textContent = formatWhen(start) || 'Start';
+    if(endLabel) endLabel.textContent = formatWhen(end) || 'End';
+    setFill(pct, upcoming ? 'Has not started' : Math.round(pct) + '% through');
+    if(upcoming){
+      boardEl.innerHTML = '';
+      say('', false);
+    }
+    startTick();
   }
 
-  /* Aggregates are disabled on this project (PGRST123), so we page through
-     rows and filter client-side. Range is 0-based inclusive. */
-  var selectCols = 'total_time,device_id,created_at,last_played_date';
+  function stopTick(){
+    if(tickTimer){ clearInterval(tickTimer); tickTimer = null; }
+  }
 
-  function fetchPaged(rows, from){
-    return fetch(HOST + '/rest/v1/scores?select=' + selectCols, {
-      headers: apiHeaders({ Range: from + '-' + (from + PAGE - 1) })
+  function startTick(){
+    if(tickTimer) return;
+    tickTimer = setInterval(onTick, TICK_MS);
+  }
+
+  function onTick(){
+    if(!current) return;
+    var now = Date.now();
+    var state = classify(current, now);
+    if(state === 'idle'){
+      loadEvent();
+      return;
+    }
+    if(lastState === 'upcoming' && state === 'live'){
+      paintEvent(current);
+      loadStandings(current);
+      return;
+    }
+    var start = parseTime(current.starts_at);
+    var end = parseTime(current.ends_at);
+    var upcoming = state === 'upcoming';
+    var remaining = upcoming ? (start - now) : (end - now);
+    var pct = 0;
+    if(!upcoming && end > start){
+      pct = ((now - start) / (end - start)) * 100;
+    }
+    timeEl.textContent = formatCountdown(remaining, upcoming);
+    setFill(pct, upcoming ? 'Has not started' : Math.round(pct) + '% through');
+  }
+
+  function loadStandings(ev){
+    if(!ev || !ev.event_id) return;
+    fetch(HOST + '/rest/v1/rpc/event_leaderboard', {
+      method: 'POST',
+      headers: apiHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({
+        p_device_id: 'website',
+        p_event_id: ev.event_id,
+        p_limit: 10
+      })
     }).then(function(res){
-      if(!res.ok){
-        if(res.status === 400 && selectCols.indexOf('created_at') !== -1){
-          selectCols = 'total_time,device_id,last_played_date';
-          return fetchPaged([], 0);
-        }
-        if(res.status === 400 && selectCols.indexOf('device_id') !== -1){
-          selectCols = 'total_time,last_played_date';
-          return fetchPaged([], 0);
-        }
-        throw new Error('HTTP ' + res.status);
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    }).then(function(data){
+      if(!current || current.event_id !== ev.event_id) return;
+      if(classify(current, Date.now()) !== 'live') return;
+      var leaders = asRows(data && data.leaders);
+      var rows = asRows(data && data.rows);
+      var shown = leaders.length ? leaders : rows;
+      var cap = Number((data && data.top_n) || ev.top_n || 5);
+      if(shown.length > cap) shown = shown.slice(0, cap);
+      renderBoard(shown);
+      if(shown.length){
+        say('', false);
+      } else {
+        say('No scores yet. Play a run on Playdate and take first.', true);
       }
-      var contentRange = res.headers.get('Content-Range');
-      return res.json().then(function(page){
-        if(!Array.isArray(page)) throw new Error('Unexpected response');
-        rows = rows.concat(page);
-        if(page.length < PAGE) return sumLaunchPlayers(rows);
-        if(contentRange){
-          var total = contentRange.split('/')[1];
-          if(total && total !== '*' && from + page.length >= Number(total)) return sumLaunchPlayers(rows);
-        }
-        if(from >= PAGE * 19) return sumLaunchPlayers(rows);
-        return fetchPaged(rows, from + PAGE);
-      });
+    }).catch(function(err){
+      console.error('[RotoCore] event standings fetch failed:', err);
+      if(!current || current.event_id !== ev.event_id) return;
+      if(classify(current, Date.now()) !== 'live') return;
+      if(!boardEl.children.length){
+        say('Standings will show here once they load. The event is still live in the game.', true);
+      }
     });
   }
 
-  function load(){
-    fetchPaged([], 0).then(render).catch(fail);
-  }
-
-  buildTrack();
-  window.addEventListener('resize', function(){ centerHead(lastPct); });
-
-  var section = document.getElementById('saga');
-  if('IntersectionObserver' in window && section){
-    var io = new IntersectionObserver(function(entries){
-      entries.forEach(function(en){
-        if(en.isIntersecting){ io.disconnect(); load(); }
+  function loadEvent(){
+    fetch(HOST + '/rest/v1/active_event', { headers: apiHeaders() })
+      .then(function(res){
+        if(!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function(rows){
+        if(!Array.isArray(rows)) throw new Error('Unexpected response');
+        var ev = rows[0] || null;
+        if(!ev){
+          paintIdle('idle', 'Nothing current or upcoming. Check back when the next window opens.');
+          return;
+        }
+        paintEvent(ev);
+        if(classify(ev, Date.now()) === 'live') loadStandings(ev);
+      })
+      .catch(function(err){
+        console.error('[RotoCore] event fetch failed:', err);
+        paintIdle('error', 'The event is still live in the game. Try a refresh in a bit.');
       });
-    }, {rootMargin:'200px'});
-    io.observe(section);
-  } else {
-    load();
   }
+
+  loadEvent();
+  setInterval(loadEvent, REFRESH_MS);
 })();
 
 /* ---------------------------------------------------------------
