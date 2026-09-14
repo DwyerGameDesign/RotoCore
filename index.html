@@ -301,7 +301,8 @@ kbd{
   text-transform:uppercase;padding:.28rem .55rem;
   background:var(--volt);color:#000;border-radius:3px;
 }
-.event.is-upcoming .event__badge{
+.event.is-upcoming .event__badge,
+.event.is-results .event__badge{
   background:transparent;color:var(--volt);border:1px solid var(--volt);
 }
 .event.is-idle .event__badge,
@@ -785,14 +786,17 @@ kbd{
 /* ---------------------------------------------------------------
    Timed event. Reads the same active_event view the game boots from.
    Empty array = nothing current or upcoming. One row = live if it
-   has started, otherwise the next one. Refetch on load and every
-   minute so the countdown stays honest. Anon key only.
+   has started, otherwise the next one. If nothing is live, a row
+   from events that ended in the last 24 hours shows final results.
+   Refetch on load and every minute so the countdown stays honest.
+   Anon key only.
    --------------------------------------------------------------- */
 (function(){
   var HOST = 'https://llkdjucqpwfemouwjpkd.supabase.co';
   var KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxsa2RqdWNxcHdmZW1vdXdqcGtkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI0NzM4NDgsImV4cCI6MjA4ODA0OTg0OH0.UFy-96ACIDqhpuCEpKFm0R9SwgT3ipOYkeHlAuSJD_k';
   var REFRESH_MS = 60000;
   var TICK_MS = 1000;
+  var RESULTS_MS = 24 * 60 * 60 * 1000;
 
   var card = document.getElementById('eventCard');
   var badge = document.getElementById('eventBadge');
@@ -833,6 +837,7 @@ kbd{
     if(!start || !end) return 'idle';
     if(now < start) return 'upcoming';
     if(now < end) return 'live';
+    if(now - end < RESULTS_MS) return 'results';
     return 'idle';
   }
 
@@ -849,6 +854,21 @@ kbd{
       body = sec + 'S';
     }
     return upcoming ? ('Starts in ' + body) : (body + ' left');
+  }
+
+  function formatEndedAgo(ms){
+    var sec = Math.max(0, Math.floor(ms / 1000));
+    var body;
+    if(sec >= 86400){
+      body = Math.floor(sec / 86400) + 'D ' + Math.floor((sec % 86400) / 3600) + 'H';
+    } else if(sec >= 3600){
+      body = Math.floor(sec / 3600) + 'H ' + Math.floor((sec % 3600) / 60) + 'M';
+    } else if(sec >= 60){
+      body = Math.floor(sec / 60) + 'M';
+    } else {
+      body = sec + 'S';
+    }
+    return 'Ended ' + body + ' ago';
   }
 
   function formatWhen(ms){
@@ -871,7 +891,7 @@ kbd{
   }
 
   function setMode(mode){
-    card.classList.remove('is-loading', 'is-idle', 'is-upcoming', 'is-live', 'is-error');
+    card.classList.remove('is-loading', 'is-idle', 'is-upcoming', 'is-live', 'is-results', 'is-error');
     card.classList.add('is-' + mode);
   }
 
@@ -962,6 +982,24 @@ kbd{
 
     var start = parseTime(ev.starts_at);
     var end = parseTime(ev.ends_at);
+    lastState = state;
+    setMode(state);
+    nameEl.textContent = ev.name || 'Event';
+    ruleEl.textContent = ev.rule_label || ev.scoring_label || ev.subtitle || '';
+    descEl.textContent = ev.description || '';
+    if(startLabel) startLabel.textContent = formatWhen(start) || 'Start';
+    if(endLabel) endLabel.textContent = formatWhen(end) || 'End';
+
+    if(state === 'results'){
+      badge.textContent = 'Results';
+      timeEl.textContent = formatEndedAgo(now - end);
+      rewardsEl.textContent = 'Final standings.';
+      setFill(100, 'Event ended');
+      if(!boardEl.children.length) say('Loading final standings\u2026', true);
+      startTick();
+      return;
+    }
+
     var upcoming = state === 'upcoming';
     var remaining = upcoming ? (start - now) : (end - now);
     var pct = 0;
@@ -969,16 +1007,9 @@ kbd{
       pct = ((now - start) / (end - start)) * 100;
     }
 
-    lastState = state;
-    setMode(state);
     badge.textContent = upcoming ? 'Coming soon' : 'Live now';
     timeEl.textContent = formatCountdown(remaining, upcoming);
-    nameEl.textContent = ev.name || 'Event';
-    ruleEl.textContent = ev.rule_label || ev.scoring_label || ev.subtitle || '';
-    descEl.textContent = ev.description || '';
     rewardsEl.textContent = rewardsLine(ev);
-    if(startLabel) startLabel.textContent = formatWhen(start) || 'Start';
-    if(endLabel) endLabel.textContent = formatWhen(end) || 'End';
     setFill(pct, upcoming ? 'Has not started' : Math.round(pct) + '% through');
     if(upcoming){
       boardEl.innerHTML = '';
@@ -1000,13 +1031,18 @@ kbd{
     if(!current) return;
     var now = Date.now();
     var state = classify(current, now);
-    if(state === 'idle'){
-      loadEvent();
+    if(state !== lastState){
+      if(state === 'idle'){
+        loadEvent();
+        return;
+      }
+      paintEvent(current);
+      if(state === 'live' || state === 'results') loadStandings(current);
       return;
     }
-    if(lastState === 'upcoming' && state === 'live'){
-      paintEvent(current);
-      loadStandings(current);
+    if(state === 'results'){
+      var ended = parseTime(current.ends_at);
+      timeEl.textContent = formatEndedAgo(now - ended);
       return;
     }
     var start = parseTime(current.starts_at);
@@ -1036,7 +1072,8 @@ kbd{
       return res.json();
     }).then(function(data){
       if(!current || current.event_id !== ev.event_id) return;
-      if(classify(current, Date.now()) !== 'live') return;
+      var kind = classify(current, Date.now());
+      if(kind !== 'live' && kind !== 'results') return;
       var leaders = asRows(data && data.leaders);
       var rows = asRows(data && data.rows);
       var shown = leaders.length ? leaders : rows;
@@ -1045,39 +1082,75 @@ kbd{
       renderBoard(shown);
       if(shown.length){
         say('', false);
+      } else if(kind === 'results'){
+        say('No scores were posted for this event.', true);
       } else {
         say('No scores yet. Play a run on Playdate and take first.', true);
       }
     }).catch(function(err){
       console.error('[RotoCore] event standings fetch failed:', err);
       if(!current || current.event_id !== ev.event_id) return;
-      if(classify(current, Date.now()) !== 'live') return;
+      var kind = classify(current, Date.now());
+      if(kind !== 'live' && kind !== 'results') return;
       if(!boardEl.children.length){
-        say('Standings will show here once they load. The event is still live in the game.', true);
+        say(kind === 'results'
+          ? 'Final standings couldn\u2019t load. They\u2019re still in the game.'
+          : 'Standings will show here once they load. The event is still live in the game.', true);
       }
     });
   }
 
+  function fetchJson(path){
+    return fetch(HOST + path, { headers: apiHeaders() }).then(function(res){
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    });
+  }
+
+  function recentEndedUrl(){
+    var now = Date.now();
+    var until = new Date(now).toISOString();
+    var since = new Date(now - RESULTS_MS).toISOString();
+    return '/rest/v1/events'
+      + '?select=event_id,name,description,rule_label,top_n,award_through,starts_at,ends_at'
+      + '&ends_at=lt.' + encodeURIComponent(until)
+      + '&ends_at=gte.' + encodeURIComponent(since)
+      + '&order=ends_at.desc&limit=1';
+  }
+
+  function pickEvent(active, ended){
+    var now = Date.now();
+    var activeKind = classify(active, now);
+    var endedKind = classify(ended, now);
+    if(activeKind === 'live') return active;
+    if(endedKind === 'results') return ended;
+    if(activeKind === 'upcoming') return active;
+    return null;
+  }
+
   function loadEvent(){
-    fetch(HOST + '/rest/v1/active_event', { headers: apiHeaders() })
-      .then(function(res){
-        if(!res.ok) throw new Error('HTTP ' + res.status);
-        return res.json();
+    Promise.all([
+      fetchJson('/rest/v1/active_event'),
+      fetchJson(recentEndedUrl()).catch(function(err){
+        console.error('[RotoCore] recent event fetch failed:', err);
+        return [];
       })
-      .then(function(rows){
-        if(!Array.isArray(rows)) throw new Error('Unexpected response');
-        var ev = rows[0] || null;
-        if(!ev){
-          paintIdle('idle', 'Nothing current or upcoming. Check back when the next window opens.');
-          return;
-        }
-        paintEvent(ev);
-        if(classify(ev, Date.now()) === 'live') loadStandings(ev);
-      })
-      .catch(function(err){
-        console.error('[RotoCore] event fetch failed:', err);
-        paintIdle('error', 'The event is still live in the game. Try a refresh in a bit.');
-      });
+    ]).then(function(parts){
+      var activeRows = parts[0];
+      var endedRows = parts[1];
+      if(!Array.isArray(activeRows)) throw new Error('Unexpected response');
+      var ev = pickEvent(activeRows[0] || null, (endedRows && endedRows[0]) || null);
+      if(!ev){
+        paintIdle('idle', 'Nothing current or upcoming. Check back when the next window opens.');
+        return;
+      }
+      paintEvent(ev);
+      var kind = classify(ev, Date.now());
+      if(kind === 'live' || kind === 'results') loadStandings(ev);
+    }).catch(function(err){
+      console.error('[RotoCore] event fetch failed:', err);
+      paintIdle('error', 'The event is still live in the game. Try a refresh in a bit.');
+    });
   }
 
   loadEvent();
