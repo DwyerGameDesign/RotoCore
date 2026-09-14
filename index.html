@@ -320,9 +320,18 @@ kbd{
   text-transform:uppercase;
 }
 .event__time:empty{display:none}
+.event__heading{
+  display:flex;align-items:center;gap:.7rem;
+  margin:.55rem 1.25rem 0;
+}
+.event__glyph{
+  width:1.2em;height:1.2em;flex:none;color:var(--volt);
+}
+.event__glyph[hidden]{display:none}
+.event__glyph svg{width:100%;height:100%;display:block}
 .event__name{
   font-family:var(--hud);font-weight:800;font-size:clamp(1.1rem,.95rem + .7vw,1.55rem);
-  letter-spacing:.04em;text-transform:uppercase;margin:.55rem 1.25rem 0;line-height:1.15;
+  letter-spacing:.04em;text-transform:uppercase;margin:0;line-height:1.15;
 }
 .event__rule{
   margin:.35rem 1.25rem 0;
@@ -371,15 +380,23 @@ kbd{
 .event__rank{
   font-family:var(--hud);font-weight:800;font-size:.74rem;color:#5f5f5f;font-variant-numeric:tabular-nums;
 }
+.event__who{min-width:0;display:flex;flex-direction:column;gap:.18rem}
 .event__player{
   font-family:var(--hud);font-size:.78rem;letter-spacing:.04em;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
+.event__tier{
+  font-family:var(--hud);font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:#5f5f5f;
+}
+.event__tier:empty{display:none}
 .event__score{
   font-family:var(--hud);font-weight:800;font-size:.85rem;font-variant-numeric:tabular-nums;
 }
-.event__board li:first-child .event__rank,
-.event__board li:first-child .event__score{color:var(--volt)}
+.event__row.is-tier1 .event__rank,
+.event__row.is-tier1 .event__score,
+.event__row.is-tier1 .event__tier{color:var(--volt)}
+.event__row.is-tier2 .event__rank,
+.event__row.is-tier2 .event__score{color:var(--bone)}
 .event__msg{
   margin:0;padding:1.1rem 1.25rem 1.3rem;
   font-family:var(--hud);font-size:.63rem;letter-spacing:.11em;line-height:1.7;color:#6e6e6e;
@@ -600,7 +617,10 @@ kbd{
           <span class="event__badge" id="eventBadge">Loading</span>
           <span class="event__time" id="eventTime"></span>
         </div>
-        <h3 class="event__name" id="eventName">Checking for an event&#8230;</h3>
+        <div class="event__heading">
+          <span class="event__glyph" id="eventGlyph" hidden></span>
+          <h3 class="event__name" id="eventName">Checking for an event&#8230;</h3>
+        </div>
         <p class="event__rule" id="eventRule"></p>
         <p class="event__desc" id="eventDesc"></p>
         <div class="event__meter" id="eventMeter">
@@ -788,6 +808,8 @@ kbd{
    Empty array = nothing current or upcoming. One row = live if it
    has started, otherwise the next one. If nothing is live, a row
    from events that ended in the last 24 hours shows final results.
+   Display follows events.rewards_label, tier names, icon, top_n,
+   and award_through (same fallbacks as the Playdate event screen).
    Refetch on load and every minute so the countdown stays honest.
    Anon key only.
    --------------------------------------------------------------- */
@@ -801,6 +823,7 @@ kbd{
   var card = document.getElementById('eventCard');
   var badge = document.getElementById('eventBadge');
   var timeEl = document.getElementById('eventTime');
+  var glyphEl = document.getElementById('eventGlyph');
   var nameEl = document.getElementById('eventName');
   var ruleEl = document.getElementById('eventRule');
   var descEl = document.getElementById('eventDesc');
@@ -882,12 +905,138 @@ kbd{
     }
   }
 
+  function trimText(s){
+    if(typeof s !== 'string') return '';
+    return s.replace(/^\s+|\s+$/g, '');
+  }
+
+  function topNOf(ev){
+    var n = Number(ev && ev.top_n);
+    return n >= 1 ? n : 5;
+  }
+
+  function awardThroughOf(ev){
+    if(!ev || ev.award_through == null || ev.award_through === '') return null;
+    var n = Number(ev.award_through);
+    return n >= 1 ? n : null;
+  }
+
+  function boardCap(ev){
+    var topN = topNOf(ev);
+    var through = awardThroughOf(ev);
+    var cap = through && through > topN ? through : topN;
+    if(cap < 1) cap = 5;
+    if(cap > 10) cap = 10;
+    return cap;
+  }
+
+  // Authored trophy labels; same fallbacks as resolve_event.sql.
+  function tierName(tier, ev){
+    var custom = trimText(ev && ev['tier' + tier + '_name']);
+    if(custom) return custom;
+    if(tier === 1) return 'WINNER';
+    if(tier === 2) return 'TOP ' + topNOf(ev);
+    var through = awardThroughOf(ev);
+    if(through) return 'TOP ' + through;
+    return 'ENTRANT';
+  }
+
+  function rankTier(rank, ev, live){
+    var topN = topNOf(ev);
+    var through = awardThroughOf(ev);
+    if(rank === 1){
+      var first = tierName(1, ev);
+      // Trophy copy is WINNER; the live board is still a race.
+      if(live && /^winner$/i.test(first)) first = '1ST PLACE';
+      return { weight: 1, name: first };
+    }
+    if(rank <= topN) return { weight: 2, name: tierName(2, ev) };
+    if(through && rank <= through) return { weight: 3, name: tierName(3, ev) };
+    return { weight: 0, name: '' };
+  }
+
   function rewardsLine(ev){
-    var topN = Number(ev.top_n) || 5;
-    var through = ev.award_through == null || ev.award_through === '' ? null : Number(ev.award_through);
-    if(through && through > topN) return 'Rewards for top ' + topN + ' and top ' + through + '. Winner takes the trophy.';
-    if(through) return 'Rewards for top ' + topN + '. Winner takes the trophy.';
-    return 'Rewards for top ' + topN + ' and every entrant. Winner takes the trophy.';
+    var custom = trimText(ev && ev.rewards_label);
+    if(custom) return custom;
+    var topN = topNOf(ev);
+    var through = awardThroughOf(ev);
+    var t1 = tierName(1, ev);
+    var t2 = tierName(2, ev);
+    var t3 = tierName(3, ev);
+    var hasPlaced = topN > 1;
+    var hasParticipant = (through == null) || (through > topN);
+    if(hasPlaced && hasParticipant) return 'Rewards for ' + t1 + ', ' + t2 + ', and ' + t3 + '.';
+    if(hasPlaced) return 'Rewards for ' + t1 + ' and ' + t2 + '.';
+    if(hasParticipant) return 'Rewards for ' + t1 + ' and ' + t3 + '.';
+    return 'Rewards for ' + t1 + '.';
+  }
+
+  var SVG_NS = 'http://www.w3.org/2000/svg';
+
+  function svgEl(name, attrs){
+    var node = document.createElementNS(SVG_NS, name);
+    if(attrs){
+      for(var k in attrs) node.setAttribute(k, attrs[k]);
+    }
+    return node;
+  }
+
+  function glyphSvg(icon){
+    var svg = svgEl('svg', { viewBox: '0 0 24 24', 'aria-hidden': 'true', focusable: 'false' });
+    function shape(tag, extra){
+      var attrs = {
+        fill: 'none',
+        stroke: 'currentColor',
+        'stroke-width': '2',
+        'stroke-linejoin': 'round',
+        'stroke-linecap': 'round'
+      };
+      if(extra){
+        for(var k in extra) attrs[k] = extra[k];
+      }
+      return svgEl(tag, attrs);
+    }
+    if(icon === 'circle'){
+      svg.appendChild(shape('circle', { cx: '12', cy: '12', r: '8' }));
+    } else if(icon === 'square'){
+      svg.appendChild(shape('rect', { x: '5', y: '5', width: '14', height: '14' }));
+    } else if(icon === 'diamond' || icon === 'rhombus'){
+      svg.appendChild(shape('polygon', { points: '12,3 21,12 12,21 3,12' }));
+    } else if(icon === 'pentagon'){
+      svg.appendChild(shape('polygon', { points: '12,3 21,10 17.5,20.5 6.5,20.5 3,10' }));
+    } else if(icon === 'hexagon'){
+      svg.appendChild(shape('polygon', { points: '12,3 19.5,7.5 19.5,16.5 12,21 4.5,16.5 4.5,7.5' }));
+    } else if(icon === 'star'){
+      svg.appendChild(shape('polygon', { points: '12,2.5 14.8,9.2 22,9.5 16.4,14.2 18.2,21.5 12,17.6 5.8,21.5 7.6,14.2 2,9.5 9.2,9.2' }));
+    } else if(icon === 'glitch'){
+      svg.appendChild(shape('line', { x1: '6', y1: '6', x2: '18', y2: '18' }));
+      svg.appendChild(shape('line', { x1: '18', y1: '6', x2: '6', y2: '18' }));
+    } else if(icon === 'letter_c' || icon === 'letter_g' || icon === 'letter_s' || icon === 'letter_k'){
+      var letter = icon.charAt(icon.length - 1).toUpperCase();
+      var t = svgEl('text', {
+        x: '12', y: '17', 'text-anchor': 'middle', fill: 'currentColor',
+        'font-size': '16', 'font-weight': '800', 'font-family': 'Martian Mono, ui-monospace, monospace'
+      });
+      t.textContent = letter;
+      svg.appendChild(t);
+    } else {
+      return null;
+    }
+    return svg;
+  }
+
+  function setGlyph(icon){
+    if(!glyphEl) return;
+    while(glyphEl.firstChild) glyphEl.removeChild(glyphEl.firstChild);
+    var key = trimText(icon).toLowerCase();
+    var svg = glyphSvg(key);
+    if(!svg){
+      glyphEl.hidden = true;
+      return;
+    }
+    glyphEl.appendChild(svg);
+    glyphEl.hidden = false;
+    glyphEl.setAttribute('aria-hidden', 'true');
   }
 
   function setMode(mode){
@@ -923,7 +1072,7 @@ kbd{
     return Array.isArray(raw) ? raw : [];
   }
 
-  function renderBoard(rows){
+  function renderBoard(rows, ev, live){
     boardEl.innerHTML = '';
     if(!rows || !rows.length) return;
     rows.forEach(function(row, i){
@@ -932,6 +1081,9 @@ kbd{
       wrap.className = 'event__row';
 
       var rankN = Number(row.ord || row.rank || (i + 1));
+      var tier = rankTier(rankN, ev || {}, live);
+      if(tier.weight) wrap.classList.add('is-tier' + tier.weight);
+
       var rank = document.createElement('span');
       rank.className = 'event__rank';
       rank.textContent = (rankN < 10 ? '0' : '') + rankN;
@@ -940,12 +1092,21 @@ kbd{
       name.className = 'event__player';
       name.textContent = row.player_name || row.playerName || '???';
 
+      var label = document.createElement('span');
+      label.className = 'event__tier';
+      label.textContent = tier.name || '';
+
+      var who = document.createElement('span');
+      who.className = 'event__who';
+      who.appendChild(name);
+      who.appendChild(label);
+
       var score = document.createElement('span');
       score.className = 'event__score';
       score.textContent = Number(row.score || 0).toLocaleString('en-US');
 
       wrap.appendChild(rank);
-      wrap.appendChild(name);
+      wrap.appendChild(who);
       wrap.appendChild(score);
       li.appendChild(wrap);
       boardEl.appendChild(li);
@@ -960,6 +1121,7 @@ kbd{
     badge.textContent = kind === 'error' ? 'Offline' : 'Idle';
     timeEl.textContent = '';
     nameEl.textContent = kind === 'error' ? 'Can\u2019t reach events right now' : 'No event right now';
+    setGlyph(null);
     ruleEl.textContent = '';
     descEl.textContent = '';
     rewardsEl.textContent = '';
@@ -985,6 +1147,7 @@ kbd{
     lastState = state;
     setMode(state);
     nameEl.textContent = ev.name || 'Event';
+    setGlyph(ev.icon);
     ruleEl.textContent = ev.rule_label || ev.scoring_label || ev.subtitle || '';
     descEl.textContent = ev.description || '';
     if(startLabel) startLabel.textContent = formatWhen(start) || 'Start';
@@ -993,7 +1156,7 @@ kbd{
     if(state === 'results'){
       badge.textContent = 'Results';
       timeEl.textContent = formatEndedAgo(now - end);
-      rewardsEl.textContent = 'Final standings.';
+      rewardsEl.textContent = rewardsLine(ev);
       setFill(100, 'Event ended');
       if(!boardEl.children.length) say('Loading final standings\u2026', true);
       startTick();
@@ -1065,7 +1228,7 @@ kbd{
       body: JSON.stringify({
         p_device_id: 'website',
         p_event_id: ev.event_id,
-        p_limit: 10
+        p_limit: Math.max(10, boardCap(ev))
       })
     }).then(function(res){
       if(!res.ok) throw new Error('HTTP ' + res.status);
@@ -1076,10 +1239,14 @@ kbd{
       if(kind !== 'live' && kind !== 'results') return;
       var leaders = asRows(data && data.leaders);
       var rows = asRows(data && data.rows);
-      var shown = leaders.length ? leaders : rows;
-      var cap = Number((data && data.top_n) || ev.top_n || 5);
+      var shown = rows;
+      var firstRank = shown.length ? Number(shown[0].ord || shown[0].rank || 0) : 0;
+      if(!shown.length || firstRank !== 1){
+        shown = leaders.length ? leaders : shown;
+      }
+      var cap = boardCap(ev);
       if(shown.length > cap) shown = shown.slice(0, cap);
-      renderBoard(shown);
+      renderBoard(shown, ev, kind === 'live');
       if(shown.length){
         say('', false);
       } else if(kind === 'results'){
@@ -1112,7 +1279,7 @@ kbd{
     var until = new Date(now).toISOString();
     var since = new Date(now - RESULTS_MS).toISOString();
     return '/rest/v1/events'
-      + '?select=event_id,name,description,rule_label,top_n,award_through,starts_at,ends_at'
+      + '?select=event_id,name,description,rule_label,rewards_label,mode,metric,aggregation,icon,bg,top_n,award_through,tier1_name,tier2_name,tier3_name,starts_at,ends_at'
       + '&ends_at=lt.' + encodeURIComponent(until)
       + '&ends_at=gte.' + encodeURIComponent(since)
       + '&order=ends_at.desc&limit=1';
