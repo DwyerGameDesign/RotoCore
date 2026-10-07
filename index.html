@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <!-- ==========================================================================
-     ROTOCORE. Catalog, $3, 18 Aug 2026, v1.5.0, contact, site URL, GIFs,
-     leaderboard, timed events. Asset paths are relative, so this works at
-     dwyergamedesign.github.io/RotoCore/ as-is.
+     ROTOCORE. itch.io + Catalog, $5, 18 Aug 2026, v1.8.3, contact, site URL,
+     GIFs, leaderboard, timed events. Asset paths are relative, so this works
+     at dwyergamedesign.github.io/RotoCore/ as-is.
      ========================================================================== -->
 
 <title>RotoCore, a crank-powered arcade high-score chaser for Playdate</title>
@@ -490,7 +490,7 @@ kbd{
       <a class="topnav__link" href="#event">Events</a>
       <a class="topnav__link" href="#look">Look</a>
       <a class="topnav__link" href="#press">Press</a>
-      <a class="btn btn--sm btn--go" href="https://play.date/games/rotocore/">Get it</a>
+      <a class="btn btn--sm btn--go" href="https://robodwyer.itch.io/rotocore">Get it</a>
     </nav>
   </header>
 </div>
@@ -507,10 +507,11 @@ kbd{
         Sweep, grab what upgrades you can, and see how long you last.
       </p>
       <div class="buys">
-        <a class="btn btn--go" href="https://play.date/games/rotocore/">Playdate Catalog</a>
+        <a class="btn btn--go" href="https://robodwyer.itch.io/rotocore">Buy on itch.io</a>
+        <a class="btn" href="https://play.date/games/rotocore/">Playdate Catalog</a>
       </div>
       <p class="hero__meta">
-        Playdate &nbsp;·&nbsp; <b data-edit="price">$3</b> &nbsp;·&nbsp; <b data-edit="date">Out Now!!!</b>
+        Playdate &nbsp;·&nbsp; <b data-edit="price">$5</b> &nbsp;·&nbsp; <b data-edit="date">Out Now!!!</b>
       </p>
       <img class="hero__badge" src="assets/play-on-playdate.png" alt="Play on Playdate">
     </div>
@@ -598,7 +599,7 @@ kbd{
       <div class="stat"><span class="stat__n">50</span><span class="stat__l">Enemy wave patterns</span></div>
       <div class="stat"><span class="stat__n">30</span><span class="stat__l">Mods &amp; powerups</span></div>
       <div class="stat"><span class="stat__n">6</span><span class="stat__l">Glitches to avoid</span></div>
-      <div class="stat"><span class="stat__n">3</span><span class="stat__l">Difficulty modes</span></div>
+      <div class="stat"><span class="stat__n">5</span><span class="stat__l">Modes · Survival is new</span></div>
       <div class="stat"><span class="stat__n">∞</span><span class="stat__l">Global leaderboard</span></div>
     </div>
   </section>
@@ -654,6 +655,7 @@ kbd{
           <button class="board__tab is-on" type="button" role="tab" aria-selected="true" data-mode="standard">Classic</button>
           <button class="board__tab" type="button" role="tab" aria-selected="false" data-mode="gradual">Gradual</button>
           <button class="board__tab" type="button" role="tab" aria-selected="false" data-mode="score_attack">Score Attack</button>
+          <button class="board__tab" type="button" role="tab" aria-selected="false" data-mode="survival">Survival</button>
           <button class="board__refresh" type="button" id="boardRefresh">Refresh</button>
         </div>
         <ol class="board__list" id="boardList"></ol>
@@ -727,10 +729,11 @@ kbd{
         <dt>Developer</dt><dd>RoboDwyer</dd>
         <dt>Platform</dt><dd>Playdate</dd>
         <dt>Genre</dt><dd>Arcade high-score chaser with roguelite upgrades</dd>
-        <dt>Price</dt><dd data-edit="price">$3 USD</dd>
+        <dt>Price</dt><dd data-edit="price">$5 USD</dd>
         <dt>Released</dt><dd data-edit="date">August 18 2026</dd>
-        <dt>Version</dt><dd>1.5.0</dd>
-        <dt>Notes</dt><dd>Online leaderboards need Playdate OS 2.7 or later</dd>
+        <dt>Version</dt><dd>1.8.3</dd>
+        <dt>Notes</dt><dd>Online leaderboards need Playdate OS 2.7 or later. New Survival mode.</dd>
+        <dt>itch.io</dt><dd><a href="https://robodwyer.itch.io/rotocore">robodwyer.itch.io/rotocore</a></dd>
         <dt>Contact</dt><dd><a href="mailto:dwyergamedesign@gmail.com">dwyergamedesign@gmail.com</a></dd>
         <dt>Website</dt><dd><a href="https://dwyergamedesign.github.io/RotoCore/">dwyergamedesign.github.io/RotoCore</a></dd>
       </dl>
@@ -743,7 +746,8 @@ kbd{
   <section class="wrap band" style="text-align:center">
     <h2 class="rise" style="margin-bottom:1.6rem">The core is counting on you.</h2>
     <div class="buys rise" style="justify-content:center">
-      <a class="btn btn--go" href="https://play.date/games/rotocore/">Playdate Catalog</a>
+      <a class="btn btn--go" href="https://robodwyer.itch.io/rotocore">Buy on itch.io</a>
+      <a class="btn" href="https://play.date/games/rotocore/">Playdate Catalog</a>
     </div>
   </section>
 
@@ -752,6 +756,7 @@ kbd{
 <footer class="wrap foot">
   <img class="foot__logo" src="assets/robodwyer.png" alt="RoboDwyer">
   <nav class="foot__links">
+    <a href="https://robodwyer.itch.io/rotocore">itch.io</a>
     <a href="https://play.date/games/rotocore/">Catalog</a>
     <a href="play/">Prototype</a>
     <a href="#press">Press kit</a>
@@ -1350,10 +1355,50 @@ kbd{
     msg.classList.remove('is-hidden');
   }
 
+  /* Survival scores are milliseconds. Same clock as the game:
+     under 10 min M:SS.mmm, 10+ min MM:SS.mmm, 1h+ H:MM:SS.mmm.
+     boardMaxMs keeps every row on a list on one format. */
+  function formatScoreTime(ms, boardMaxMs){
+    ms = Math.floor(Number(ms) || 0);
+    if(ms < 0) ms = 0;
+    var styleMs = boardMaxMs == null ? ms : Math.floor(Number(boardMaxMs) || 0);
+    if(styleMs < 0) styleMs = 0;
+
+    var totalSeconds = Math.floor(ms / 1000);
+    var millis = ms % 1000;
+    var hours = Math.floor(totalSeconds / 3600);
+    var minutes = Math.floor((totalSeconds % 3600) / 60);
+    var seconds = totalSeconds % 60;
+    var pad = function(n, w){ return String(n).padStart(w, '0'); };
+
+    if(styleMs >= 3600000){
+      var hourDigits = String(Math.floor(styleMs / 3600000)).length;
+      if(hourDigits < 1) hourDigits = 1;
+      return pad(hours, hourDigits) + ':' + pad(minutes, 2) + ':' + pad(seconds, 2) + '.' + pad(millis, 3);
+    }
+    if(styleMs >= 600000){
+      return pad(minutes, 2) + ':' + pad(seconds, 2) + '.' + pad(millis, 3);
+    }
+    return minutes + ':' + pad(seconds, 2) + '.' + pad(millis, 3);
+  }
+
+  function formatBoardScore(value, which, boardMaxMs){
+    if(which === 'survival') return formatScoreTime(value, boardMaxMs);
+    return Number(value || 0).toLocaleString('en-US');
+  }
+
   function render(rows){
     list.innerHTML = '';
     if(!rows.length){ say('No scores on this board yet. Somebody has to go first.'); return; }
     msg.classList.add('is-hidden');
+
+    var boardMaxMs = 0;
+    if(mode === 'survival'){
+      rows.forEach(function(row){
+        var n = Number(row.score || 0);
+        if(n > boardMaxMs) boardMaxMs = n;
+      });
+    }
 
     rows.forEach(function(row, i){
       var li   = document.createElement('li');
@@ -1371,7 +1416,7 @@ kbd{
 
       var score = document.createElement('span');
       score.className = 'board__score';
-      score.textContent = Number(row.score || 0).toLocaleString('en-US');
+      score.textContent = formatBoardScore(row.score, mode, boardMaxMs);
 
       wrap.appendChild(rank); wrap.appendChild(name); wrap.appendChild(score);
       li.appendChild(wrap);
