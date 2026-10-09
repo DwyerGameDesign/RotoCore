@@ -1077,9 +1077,56 @@ kbd{
     return Array.isArray(raw) ? raw : [];
   }
 
+  /* Survival scores are milliseconds. Same clock as the live scores board:
+     under 10 min M:SS.mmm, 10+ min MM:SS.mmm, 1h+ H:MM:SS.mmm.
+     boardMaxMs keeps every row on a list on one format. */
+  function formatScoreTime(ms, boardMaxMs){
+    ms = Math.floor(Number(ms) || 0);
+    if(ms < 0) ms = 0;
+    var styleMs = boardMaxMs == null ? ms : Math.floor(Number(boardMaxMs) || 0);
+    if(styleMs < 0) styleMs = 0;
+
+    var totalSeconds = Math.floor(ms / 1000);
+    var millis = ms % 1000;
+    var hours = Math.floor(totalSeconds / 3600);
+    var minutes = Math.floor((totalSeconds % 3600) / 60);
+    var seconds = totalSeconds % 60;
+    var pad = function(n, w){ return String(n).padStart(w, '0'); };
+
+    if(styleMs >= 3600000){
+      var hourDigits = String(Math.floor(styleMs / 3600000)).length;
+      if(hourDigits < 1) hourDigits = 1;
+      return pad(hours, hourDigits) + ':' + pad(minutes, 2) + ':' + pad(seconds, 2) + '.' + pad(millis, 3);
+    }
+    if(styleMs >= 600000){
+      return pad(minutes, 2) + ':' + pad(seconds, 2) + '.' + pad(millis, 3);
+    }
+    return minutes + ':' + pad(seconds, 2) + '.' + pad(millis, 3);
+  }
+
+  function isSurvivalEvent(ev){
+    var mode = trimText(ev && ev.mode).toLowerCase();
+    var metric = trimText(ev && ev.metric).toLowerCase();
+    return mode === 'survival' || metric === 'time' || metric === 'survival_time';
+  }
+
+  function formatEventScore(value, ev, boardMaxMs){
+    if(isSurvivalEvent(ev)) return formatScoreTime(value, boardMaxMs);
+    return Number(value || 0).toLocaleString('en-US');
+  }
+
   function renderBoard(rows, ev, live){
     boardEl.innerHTML = '';
     if(!rows || !rows.length) return;
+
+    var boardMaxMs = 0;
+    if(isSurvivalEvent(ev)){
+      rows.forEach(function(row){
+        var n = Number(row.score || 0);
+        if(n > boardMaxMs) boardMaxMs = n;
+      });
+    }
+
     rows.forEach(function(row, i){
       var li = document.createElement('li');
       var wrap = document.createElement('div');
@@ -1108,7 +1155,7 @@ kbd{
 
       var score = document.createElement('span');
       score.className = 'event__score';
-      score.textContent = Number(row.score || 0).toLocaleString('en-US');
+      score.textContent = formatEventScore(row.score, ev, boardMaxMs);
 
       wrap.appendChild(rank);
       wrap.appendChild(who);
